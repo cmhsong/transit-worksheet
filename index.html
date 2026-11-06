@@ -76,7 +76,16 @@ input.bad{border:2px solid var(--bad);background:var(--bad-bg);color:var(--ink)}
 .stop .dot{position:absolute;top:.35rem;left:50%;transform:translateX(-50%);width:1.5rem;height:1.5rem;border-radius:50%;background:var(--card);border:.3rem solid var(--lc,#888);z-index:1}
 .stop.here .dot{background:var(--lc);box-shadow:0 0 0 .35rem rgba(255,200,0,.6)}
 .stop.target .dot{border-color:#e53935;background:#ffcdd2}
-.stop .nm{font-weight:700;font-size:.98rem;word-break:keep-all;padding:0 .2rem}
+.stop .nm{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;padding:0 .2rem}
+.wordbank .wchip{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--card);border-style:solid;border-width:2px;font-size:1.05rem;padding:.3rem .8rem}
+.wordbank .wchip:hover{border-color:var(--pri)}
+.wordbank .wchip.sel{outline:3px solid var(--pri);background:var(--soft)}
+.wordbank .wchip.used{opacity:.35;text-decoration:line-through;cursor:pointer}
+.wordbank .wchip.dragging{opacity:.4}
+.dragGhost{position:fixed;z-index:60;pointer-events:none;transform:translate(-50%,-60%) scale(1.1);border:2px solid var(--pri);border-radius:.5rem;padding:.3rem .8rem;font-weight:800;background:var(--card);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.stop input.over{outline:3px dashed var(--pri);background:var(--soft)}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .stop input{width:7.4rem;text-align:center;font-weight:700}
 .stop .veh{position:absolute;top:-1.15rem;left:50%;transform:translateX(-50%);font-size:1.6rem;z-index:2;transition:all .4s}
 .stop.moving .veh{left:100%}
@@ -99,6 +108,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 #toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:#222;color:#fff;padding:.7rem 1.1rem;border-radius:.6rem;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50;font-weight:700}
 #toast.show{opacity:1}
 .printHead{display:none}
+.printOnly{display:none}
+@media print{ .printOnly{display:block} .wordbank .wchip.used{opacity:1;text-decoration:none} }
 .mkItem{display:flex;gap:.5rem;align-items:center;border-top:1px dashed var(--line);padding:.35rem 0}
 .mkItem .tx{flex:1}
 .lq{border:1px solid var(--line);border-radius:.8rem;padding:.7rem .9rem;margin:.6rem 0;break-inside:avoid}
@@ -161,6 +172,11 @@ body.showKey .script{display:block}
       <label for="dest">도착</label><input id="dest" value="서울역" style="flex:1;min-width:10rem">
     </div>
     <div class="row" style="margin-top:.6rem">
+      <label for="provider">지도</label>
+      <select id="provider"><option value="naver">네이버 지도 (옆 창)</option><option value="google">구글 지도 (화면 안)</option></select>
+      <label class="row" style="gap:.3rem" id="nvSideWrap"><input type="checkbox" id="nvSide" checked style="min-height:auto">학습지 옆에 나란히 띄우기</label>
+    </div>
+    <div class="row" style="margin-top:.6rem">
       <label for="tmode">교통수단</label>
       <select id="tmode"><option value="ALL">버스+지하철</option><option value="BUS">버스만</option><option value="SUBWAY">지하철만</option></select>
       <label for="depTime">출발 시각</label><input id="depTime" type="time">
@@ -173,6 +189,19 @@ body.showKey .script{display:block}
       <div id="mapWrap">
         <div id="map" style="display:none"></div>
         <iframe id="mapFrame" title="구글 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div id="naverPanel" style="display:none;min-height:460px;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;padding:1.2rem;text-align:center;background:var(--card)">
+          <div style="font-size:3rem;font-weight:900;color:#03c75a;line-height:1">N</div>
+          <div style="font-size:1.2rem;font-weight:800">네이버 지도로 길찾기</div>
+          <div class="muted" id="nvRouteText">출발과 도착을 쓰고 아래 버튼을 눌러요.</div>
+          <button class="big" id="nvRoute" style="background:#03c75a;color:#fff;border-color:#03c75a;font-weight:800">🧭 네이버 지도에서 대중교통 길찾기</button>
+          <div class="row" style="justify-content:center">
+            <button id="nvSearchO">📍 출발지 찾아보기</button>
+            <button id="nvSearchD">🚩 도착지 찾아보기</button>
+            <button id="nvApp">📱 네이버 지도 앱으로</button>
+          </div>
+          <div id="nvStatus" class="muted" style="font-size:.9rem" aria-live="polite"></div>
+          <p class="note" style="font-size:.88rem;margin:0">네이버 지도 창에서 <b>대중교통</b> 경로를 보고, 오른쪽 학습지를 채워요.<br>길찾기 화면이 안 나오면 '출발지/도착지 찾아보기'에서 <b>[출발] [도착]</b> 버튼을 눌러요.</p>
+        </div>
         <div class="mapCtl noprint">
           <button id="mzIn" title="지도 확대">＋</button>
           <button id="mzOut" title="지도 축소">－</button>
@@ -251,6 +280,7 @@ body.showKey .script{display:block}
       <select id="shMode"><option value="alt">한 칸씩 건너서</option><option value="rand">무작위 절반</option><option value="few">조금만(3개)</option><option value="all">모두</option></select>
       <label class="row" style="gap:.3rem"><input type="checkbox" id="shBank" checked style="min-height:auto">보기 단어 보여 주기</label>
       <label class="row" style="gap:.3rem"><input type="checkbox" id="shHint" style="min-height:auto">첫 글자 힌트</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="shInstant" checked style="min-height:auto">옮기자마자 정답 확인</label>
       <button class="pri" id="shMake">학습지 만들기</button>
     </div>
   </div>
@@ -491,7 +521,7 @@ const today = () => new Date().toLocaleDateString('ko-KR');
 
 /* ===================== 화면 확대 / 고대비 ===================== */
 let scale = store.get('scale', 1);
-function applyScale(){ scale=Math.min(2.2,Math.max(.8,Math.round(scale*100)/100)); document.documentElement.style.setProperty('--scale',scale); $('#zoomPct').textContent=Math.round(scale*100)+'%'; store.set('scale',scale); }
+function applyScale(){ scale=Math.min(2.2,Math.max(.8,Math.round(scale*100)/100)); document.documentElement.style.setProperty('--scale',scale); $('#zoomPct').textContent=Math.round(scale*100)+'%'; store.set('scale',scale); setTimeout(()=>fitAll(),0); }
 $('#zoomIn').onclick=()=>{scale+=.15;applyScale();};
 $('#zoomOut').onclick=()=>{scale-=.15;applyScale();};
 $('#zoomReset').onclick=()=>{scale=1;applyScale();};
@@ -512,6 +542,7 @@ $('#tabs').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
   $$('#tabs button').forEach(x=>x.classList.toggle('active',x===b));
   $$('section.tab').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));
   if(b.dataset.tab!=='t-ride') stopRide();
+  setTimeout(fitAll,0);
 };
 
 /* ===================== 소리 (TTS + 딩동) ===================== */
@@ -655,7 +686,79 @@ function loadGoogle(key){
     s.async=true; s.onerror=rej; document.head.appendChild(s);
   });
 }
-function useIframe(){ gmap=null; $('#map').style.display='none'; $('#mapFrame').style.display='block'; $('#mapModeBadge').textContent='기본 지도 (키 없음)'; iframeRoute(); }
+function useIframe(){ gmap=null; $('#map').style.display='none'; $('#mapFrame').style.display='block'; $('#mapModeBadge').textContent='기본 지도 (키 없음)'; iframeRoute(); applyProvider(); }
+
+/* ---------- 네이버 지도 ---------- */
+const isNaver = () => $('#provider').value==='naver';
+function applyProvider(){
+  const nv=isNaver();
+  $('#naverPanel').style.display = nv? 'flex':'none';
+  $('#map').style.display = !nv && gmap ? 'block':'none';
+  $('#mapFrame').style.display = !nv && !gmap ? 'block':'none';
+  $('.mapCtl').style.display = nv? 'none':'';
+  $('#nvSideWrap').style.display = nv? '':'none';
+  $('#gmLink').style.display = nv? 'none':'';
+  $('#mapModeBadge').textContent = nv? '네이버 지도' : (gmap? '구글 지도 API 사용 중' : '기본 구글 지도 (키 없음)');
+  if(nv){ answerKey=null; $('#routeList').innerHTML='<p class="muted">네이버 지도 창에 나온 경로를 보고 학습지를 써요. 자동 채점은 구글 지도(API 키)를 쓸 때만 되고, 네이버 지도를 쓸 때는 선생님과 함께 확인해요.</p>'; }
+  else if(!gmap) $('#routeList').innerHTML='<p class="muted">구글 지도 API 키를 설정하면 여기에 경로, 정거장 수, 출발·도착 시각이 나와요.</p>';
+  store.set('provider',$('#provider').value);
+}
+/* 위경도 → 네이버 웹 지도 좌표(EPSG:3857) */
+const toMerc = (lat,lng) => [lng*20037508.34/180, Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180)*20037508.34/180];
+const geoCache = store.get('geo',{});
+async function geocode(q){
+  q=q.trim(); const m=q.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if(m) return {lat:+m[1],lng:+m[2],name:'내 위치'};
+  if(geoCache[q]) return geoCache[q];
+  let r=null;
+  if(window.google?.maps?.Geocoder){
+    try{ const g=await new google.maps.Geocoder().geocode({address:q,region:'KR'}); const l=g.results[0].geometry.location; r={lat:l.lat(),lng:l.lng(),name:q}; }catch(e){}
+  }
+  if(!r){
+    try{ const j=await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))).json();
+      if(j[0]) r={lat:+j[0].lat,lng:+j[0].lon,name:q}; }catch(e){}
+  }
+  if(r){ geoCache[q]=r; store.set('geo',geoCache); }
+  return r;
+}
+const nvPart = p => { const [x,y]=toMerc(p.lat,p.lng); return `${x.toFixed(7)},${y.toFixed(7)},${encodeURIComponent(p.name)},,`; };
+const nvSearchUrl = q => `https://map.naver.com/p/search/${encodeURIComponent(q.trim())}`;
+function nvOpenWindow(){
+  if(!$('#nvSide').checked) return window.open('about:blank','_blank');
+  const W=screen.availWidth, H=screen.availHeight, w=Math.round(W*0.55);
+  return window.open('about:blank','naverMap',`width=${w},height=${H},left=${W-w},top=0`);
+}
+function nvGo(win,url){ if(win && !win.closed){ win.location.href=url; win.focus(); } else location.href=url; }
+async function naverRoute(){
+  const o=$('#orig').value.trim(), d=$('#dest').value.trim();
+  if(!o||!d) return toast('출발과 도착을 써 주세요');
+  $('#mq_start').value=o; $('#mq_end').value=d;
+  $('#nvRouteText').innerHTML=`<b>${esc(o)}</b> → <b>${esc(d)}</b>`;
+  const win=nvOpenWindow();   // 팝업 차단을 피하려고 먼저 창을 연다
+  $('#nvStatus').textContent='장소 위치를 찾는 중…';
+  const [a,b]=await Promise.all([geocode(o),geocode(d)]);
+  if(!a||!b){
+    $('#nvStatus').textContent=`'${!a?o:d}' 위치를 찾지 못해 장소 검색 화면을 열었어요. [출발] [도착] 버튼으로 길찾기를 해요.`;
+    return nvGo(win, nvSearchUrl(!b? d : o));
+  }
+  const url=`https://map.naver.com/p/directions/${nvPart(a)}/${nvPart(b)}/-/transit`;
+  $('#nvStatus').textContent='네이버 지도 창을 열었어요.';
+  nvGo(win,url);
+}
+async function naverApp(){
+  const o=$('#orig').value.trim(), d=$('#dest').value.trim();
+  const [a,b]=await Promise.all([geocode(o),geocode(d)]);
+  if(!b) return toast('도착지 위치를 찾지 못했어요');
+  const qp=new URLSearchParams({...(a?{slat:a.lat,slng:a.lng,sname:a.name}:{}), dlat:b.lat, dlng:b.lng, dname:b.name, appname:SITE_URL});
+  location.href='nmap://route/public?'+qp.toString();
+  setTimeout(()=>toast('앱이 열리지 않으면 네이버 지도 앱을 설치하거나 위의 초록 버튼을 써요'),1800);
+}
+$('#provider').value = store.get('provider','naver');
+$('#provider').onchange=()=>{ applyProvider(); if(!isNaver() && gmap) routeJS(); };
+$('#nvRoute').onclick=naverRoute;
+$('#nvApp').onclick=naverApp;
+$('#nvSearchO').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#orig').value)); };
+$('#nvSearchD').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#dest').value)); };
 async function initMap(){
   if(!cfg.google){ useIframe(); return; }
   try{
@@ -665,8 +768,8 @@ async function initMap(){
     new google.maps.TransitLayer().setMap(gmap);
     gService=new google.maps.DirectionsService();
     gRenderer=new google.maps.DirectionsRenderer({map:gmap});
-    $('#mapModeBadge').textContent='구글 지도 API 사용 중';
-    routeJS();
+    applyProvider();
+    if(!isNaver()) routeJS();
   }catch(e){ useIframe(); }
 }
 function departDate(){ const [h,m]=($('#depTime').value||'').split(':').map(Number); const d=new Date(); if(!isNaN(h)){ d.setHours(h,m||0,0,0); } return d; }
@@ -727,7 +830,7 @@ function mapCheck(){
   });
   $('#mapResult').innerHTML=`<p class="feedback ${okN===total?'ok':'bad'}">${total}문제 중 ${okN}개 맞았어요! ${okN===total?'🎉':'❌에 마우스를 올리면 정답이 보여요.'}</p>`;
 }
-$('#goBtn').onclick=()=>{ $('#mq_start').value=$('#orig').value; $('#mq_end').value=$('#dest').value; gmap? routeJS() : iframeRoute(); };
+$('#goBtn').onclick=()=>{ if(isNaver()) return naverRoute(); $('#mq_start').value=$('#orig').value; $('#mq_end').value=$('#dest').value; gmap? routeJS() : iframeRoute(); };
 $('#swap').onclick=()=>{ const a=$('#orig').value; $('#orig').value=$('#dest').value; $('#dest').value=a; };
 $('#myLoc').onclick=()=>{
   if(!navigator.geolocation) return toast('위치 기능을 쓸 수 없어요');
@@ -840,13 +943,81 @@ function makeSheet(){
   if(mode==='all') inner.forEach(i=>blanks.add(i));
   sheet={k,stops,blanks};
   $('#shTitle').innerHTML=`<span class="chip" style="background:${L.color}">${esc(L.short)}</span> ${esc(baseName(stops[0]))} → ${esc(baseName(stops[n-1]))} ${L.type==='bus'?'정류장':'역'} 이름을 빈칸에 써요`;
-  $('#shBankBox').innerHTML = $('#shBank').checked? `<div class="muted">보기</div><div class="wordbank">${shuffle([...blanks].map(i=>stops[i])).map(s=>`<span>${esc(s)}</span>`).join('')}</div>`:'';
+  wSel=null;
+  $('#shBankBox').innerHTML = $('#shBank').checked? `<div class="muted noprint">보기 — 역 이름을 <b>끌어서</b> 알맞은 빈칸에 놓아요. (눌러서 고른 뒤 빈칸을 눌러도 돼요)</div>
+    <div class="muted printOnly">보기</div>
+    <div class="wordbank">${shuffle([...blanks].map(i=>stops[i])).map((s,j)=>`<span class="wchip" role="button" tabindex="0" data-w="${esc(s)}" data-id="w${j}">${esc(s)}</span>`).join('')}</div>`:'';
   const hint=$('#shHint').checked;
   $('#shRoute').style.setProperty('--lc',L.color);
   $('#shRoute').innerHTML = stops.map((s,i)=>`<div class="stop"><span class="dot"></span>${blanks.has(i)
     ? `<input data-i="${i}" aria-label="${i+1}번째 빈칸" placeholder="${hint?esc(s[0])+'…':''}">` : `<div class="nm">${esc(s)}</div>`}</div>`).join('');
   $('#shResult').innerHTML='';
+  fitAll();
 }
+
+/* ---------- 보기 낱말 옮기기 (마우스·터치 끌기 / 눌러서 고르기) ---------- */
+let wSel=null, drag=null;
+const chipById = id => $(`#shBankBox .wchip[data-id="${id}"]`);
+function selectChip(c){ if(wSel) wSel.classList.remove('sel'); wSel = (wSel===c)? null : c; if(wSel){ wSel.classList.add('sel'); speak(sayName(c.dataset.w)); } }
+function unplace(inp){ if(inp.dataset.wid){ chipById(inp.dataset.wid)?.classList.remove('used'); delete inp.dataset.wid; } }
+function returnChip(c){ const inp=$(`#shRoute input[data-wid="${c.dataset.id}"]`); if(inp){ inp.value=''; inp.classList.remove('ok','bad'); unplace(inp); fitEl(inp); } c.classList.remove('used'); }
+function placeChip(c, inp){
+  if(wSel) wSel.classList.remove('sel'); wSel=null;
+  const correct=sheet.stops[+inp.dataset.i], instant=$('#shInstant').checked;
+  if(instant && !sameName(c.dataset.w, correct)){
+    inp.classList.add('bad','shake'); setTimeout(()=>inp.classList.remove('bad','shake'),700);
+    toast('여기가 아니에요. 다시 해 봐요!'); return;
+  }
+  unplace(inp);
+  inp.value=c.dataset.w; inp.dataset.wid=c.dataset.id; c.classList.add('used');
+  inp.classList.remove('bad'); inp.classList.toggle('ok', instant);
+  fitEl(inp);
+  if(instant){ chime(); const all=$$('#shRoute input'); if(all.every(x=>sameName(x.value, sheet.stops[+x.dataset.i]))) $('#shCheck').click(); }
+}
+$('#shBankBox').addEventListener('pointerdown',e=>{
+  const c=e.target.closest('.wchip'); if(!c) return;
+  if(c.classList.contains('used')){ returnChip(c); return; }
+  e.preventDefault();
+  drag={c,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+});
+document.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  if(!drag.moved){ if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6) return;
+    drag.moved=true; drag.ghost=document.createElement('div'); drag.ghost.className='dragGhost'; drag.ghost.textContent=drag.c.dataset.w;
+    document.body.appendChild(drag.ghost); drag.c.classList.add('dragging'); }
+  drag.ghost.style.left=e.clientX+'px'; drag.ghost.style.top=e.clientY+'px';
+  const inp=document.elementFromPoint(e.clientX,e.clientY)?.closest('#shRoute .stop')?.querySelector('input') || null;
+  if(drag.over!==inp){ drag.over?.classList.remove('over'); drag.over=inp; inp?.classList.add('over'); }
+  if(e.clientY<60) scrollBy(0,-12); else if(e.clientY>innerHeight-60) scrollBy(0,12);
+});
+function endDrag(drop){
+  if(!drag) return; const d=drag; drag=null;
+  d.c.classList.remove('dragging'); d.ghost?.remove(); d.over?.classList.remove('over');
+  if(!drop) return;
+  if(!d.moved) selectChip(d.c); else if(d.over) placeChip(d.c,d.over);
+}
+document.addEventListener('pointerup',()=>endDrag(true));
+document.addEventListener('pointercancel',()=>endDrag(false));
+$('#shBankBox').addEventListener('keydown',e=>{ const c=e.target.closest('.wchip'); if(c&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); c.classList.contains('used')? returnChip(c) : selectChip(c); } });
+$('#shRoute').addEventListener('click',e=>{ const inp=e.target.closest('input'); if(inp && wSel) placeChip(wSel,inp); });
+$('#shRoute').addEventListener('keydown',e=>{ const inp=e.target.closest('input'); if(inp && wSel && e.key==='Enter'){ e.preventDefault(); placeChip(wSel,inp); } });
+$('#shRoute').addEventListener('input',e=>{ const inp=e.target.closest('input'); if(!inp) return; unplace(inp); inp.classList.remove('ok','bad'); fitEl(inp); });
+
+/* ---------- 긴 역 이름 글자 크기 자동 맞춤 ---------- */
+let _cv=null; try{ _cv=document.createElement('canvas').getContext('2d'); }catch(e){}
+function fitEl(el){
+  if(!_cv || !el) return;
+  const isInp=el.tagName==='INPUT', text=isInp? (el.value||el.placeholder) : el.textContent.trim();
+  el.style.fontSize='';
+  const cs=getComputedStyle(el), avail=el.clientWidth-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0)-2;
+  if(!text || avail<=0) return;
+  const base=parseFloat(cs.fontSize);
+  _cv.font=`${cs.fontWeight} ${base}px ${cs.fontFamily}`;
+  const w=_cv.measureText(text).width;
+  if(w>avail) el.style.fontSize=Math.max(base*0.5, base*avail/w).toFixed(2)+'px';
+}
+function fitAll(){ $$('.stop .nm, .stop input').forEach(fitEl); }
+addEventListener('resize',()=>{ clearTimeout(fitAll._t); fitAll._t=setTimeout(fitAll,150); });
 $('#shMake').onclick=makeSheet;
 $('#shCheck').onclick=()=>{ if(!sheet) return; let ok=0,t=0;
   $$('#shRoute input').forEach(inp=>{ const c=sameName(inp.value,sheet.stops[+inp.dataset.i]); t++; if(c) ok++; inp.classList.toggle('ok',c); inp.classList.toggle('bad',!c); });
@@ -858,6 +1029,7 @@ $('#shListen').onclick=async()=>{ if(!sheet) return; const unit=LINES[sheet.k].t
 
 /* ===================== ④ 안내방송 듣고 내리기 ===================== */
 let ride=null;
+const DEST_EXTRA_MS = 2000;   // 목적지에서 내리기/하차벨을 누를 수 있게 더 주는 시간
 function rideRange(){ const k=$('#rdLine').value; if(!LINES[k]) return; const n=LINES[k].stops.length;
   fillStopSelect($('#rdFrom'),k,Math.min(n-1, k==='l4'?11:0)); fillStopSelect($('#rdTo'),k,Math.min(n-1,(k==='l4'?11:0)+4)); rideHow(); rideIdle(); }
 $('#rdLine').onchange=rideRange; $('#rdFrom').onchange=rideIdle; $('#rdTo').onchange=rideIdle; $('#rdHide').onchange=()=>ride?renderRide():rideIdle();
@@ -878,6 +1050,7 @@ function drawRoute(k,a,b,cur,moving){
   $('#rdRoute').style.setProperty('--lc',L.color);
   $('#rdRoute').innerHTML = segment(k,a,b).map(i=>`<div class="stop ${i===cur?'here':''} ${i===b?'target':''} ${i===cur&&moving?'moving':''}"><span class="dot"></span>
     ${i===cur?`<span class="veh">${L.type==='bus'?'🚌':'🚇'}</span>`:''}<div class="nm">${hide&&i!==a?'❓':esc(L.stops[i])}${i===b&&!hide?' 🚩':''}</div></div>`).join('');
+  $$('#rdRoute .nm').forEach(fitEl);
 }
 function renderRide(){ if(ride) drawRoute(ride.k,ride.a,ride.b,ride.cur,ride.phase==='moving'); }
 function screen(t){ $('#rdScreenBox').textContent = $('#rdScreen').checked? t : '🔊 잘 들어 보세요'; }
@@ -905,7 +1078,7 @@ async function startRide(){
       await wait(1200*sp); if(!alive()) return;
       await chime(); if(!alive()) return;
       await say(`이번 정류장은 ${sayName(nm)}입니다.` + (next? ` 다음 정류장은 ${sayName(next)}입니다.`:''));
-      await wait(2500*sp); if(!alive()) return;
+      await wait(2500*sp + (i===b? DEST_EXTRA_MS:0)); if(!alive()) return;   // 목적지는 2초 더 기다려 줌
       r.window=false; r.cur=i;
       if(r.bell){
         r.phase='stopped'; renderRide();
@@ -921,12 +1094,13 @@ async function startRide(){
       await wait(800*sp); if(!alive()) return;
       await say(`다음 역은 ${sayName(nm)}역입니다.`);
       await wait(1800*sp); if(!alive()) return;
-      r.cur=i; r.phase='stopped'; renderRide();
+      r.cur=i; r.phase='stopped'; r.doors=true; renderRide();   // 서자마자 내리기 가능
       await chime(); if(!alive()) return;
       const trans=Object.values(LINES).filter(l=>l!==L&&l.type==='subway'&&l.stops.some(s=>baseName(s)===baseName(nm))).map(l=>l.short);
       await say(`이번 역은 ${sayName(nm)}, ${sayName(nm)}역입니다.` + (trans.length? ` ${trans.join(', ')}으로 갈아타실 분은 이번 역에서 내리시기 바랍니다.`:'') + ' 내리실 문은 오른쪽입니다.');
-      r.doors=true; screen(`🚪 문이 열렸어요 — ${nm}`);
-      await wait(3500*sp); if(!alive()) return;
+      if(!alive()) return;
+      screen(`🚪 문이 열렸어요 — ${nm}`);
+      await wait(3500*sp + (i===b? DEST_EXTRA_MS:0)); if(!alive()) return;   // 목적지는 2초 더 기다려 줌
       r.doors=false;
       if(i===b){ await say('출입문 닫습니다.'); rideFb(`😢 <b>${esc(baseName(nm))}</b>역에서 내리지 못하고 지나쳤어요. 다시 해 봐요!`, false); ride=null; return; }
       await say('출입문 닫습니다.');
