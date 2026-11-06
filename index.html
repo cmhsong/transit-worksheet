@@ -109,6 +109,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 #toast.show{opacity:1}
 .printHead{display:none}
 .printOnly{display:none}
+.splitGrid{display:grid;grid-template-columns:minmax(300px,1fr) 1.35fr;gap:1rem;align-items:start}
+.splitGrid #nvPane{position:sticky;top:7.5rem}
+@media (max-width:820px){.splitGrid{grid-template-columns:1fr}.splitGrid #nvPane{position:static}}
+body.split nav{display:none}
+body.split .splitGrid{grid-template-columns:1fr}
+body.split .splitGrid #nvPane{position:static}
+body.split main{padding:.5rem}
+body.split .topbar h1{font-size:1rem}
+@media print{.splitGrid{display:block}}
 @media print{ .printOnly{display:block} .wordbank .wchip.used{opacity:1;text-decoration:none} }
 .mkItem{display:flex;gap:.5rem;align-items:center;border-top:1px dashed var(--line);padding:.35rem 0}
 .mkItem .tx{flex:1}
@@ -151,11 +160,10 @@ body.showKey .script{display:block}
   </div>
   <nav id="tabs">
     <button data-tab="t-map" class="active">① 길찾기</button>
-    <button data-tab="t-live">② 실시간 도착</button>
-    <button data-tab="t-sheet">③ 역 이름 쓰기</button>
-    <button data-tab="t-ride">④ 안내방송 듣고 내리기</button>
-    <button data-tab="t-dict">⑤ 듣고 쓰기</button>
-    <button data-tab="t-make">⑥ 방송 만들기·듣기 학습지</button>
+    <button data-tab="t-sheet">② 역 이름 쓰기</button>
+    <button data-tab="t-ride">③ 안내방송 듣고 내리기</button>
+    <button data-tab="t-dict">④ 듣고 쓰기</button>
+    <button data-tab="t-make">⑤ 방송 만들기·듣기 학습지</button>
   </nav>
 </header>
 
@@ -163,104 +171,48 @@ body.showKey .script{display:block}
 <!-- ① 길찾기 -->
 <section class="tab active" id="t-map">
   <div class="printHead"><span>길찾기 학습지</span><span class="pName"></span><span class="pDate"></span></div>
-  <div class="card noprint">
-    <h2>구글맵으로 길 찾기</h2>
-    <div class="row">
-      <label for="orig">출발</label><input id="orig" value="혜화역" style="flex:1;min-width:10rem">
-      <button id="myLoc" title="지금 있는 곳">📍 내 위치</button>
-      <button id="swap" title="출발과 도착 바꾸기">⇅</button>
-      <label for="dest">도착</label><input id="dest" value="서울역" style="flex:1;min-width:10rem">
-    </div>
-    <div class="row" style="margin-top:.6rem">
-      <label for="provider">지도</label>
-      <select id="provider"><option value="naver">네이버 지도 (옆 창)</option><option value="google">구글 지도 (화면 안)</option></select>
-      <label class="row" style="gap:.3rem" id="nvSideWrap"><input type="checkbox" id="nvSide" checked style="min-height:auto">학습지 옆에 나란히 띄우기</label>
-    </div>
-    <div class="row" style="margin-top:.6rem">
-      <label for="tmode">교통수단</label>
-      <select id="tmode"><option value="ALL">버스+지하철</option><option value="BUS">버스만</option><option value="SUBWAY">지하철만</option></select>
-      <label for="depTime">출발 시각</label><input id="depTime" type="time">
-      <button class="pri big" id="goBtn">🔍 길찾기</button>
-      <span id="mapModeBadge" class="badge"></span>
-    </div>
-  </div>
-  <div class="grid2">
-    <div>
-      <div id="mapWrap">
-        <div id="map" style="display:none"></div>
-        <iframe id="mapFrame" title="구글 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        <div id="naverPanel" style="display:none;min-height:460px;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;padding:1.2rem;text-align:center;background:var(--card)">
-          <div style="font-size:3rem;font-weight:900;color:#03c75a;line-height:1">N</div>
-          <div style="font-size:1.2rem;font-weight:800">네이버 지도로 길찾기</div>
-          <div class="muted" id="nvRouteText">출발과 도착을 쓰고 아래 버튼을 눌러요.</div>
-          <button class="big" id="nvRoute" style="background:#03c75a;color:#fff;border-color:#03c75a;font-weight:800">🧭 네이버 지도에서 대중교통 길찾기</button>
-          <div class="row" style="justify-content:center">
-            <button id="nvSearchO">📍 출발지 찾아보기</button>
-            <button id="nvSearchD">🚩 도착지 찾아보기</button>
-            <button id="nvApp">📱 네이버 지도 앱으로</button>
-          </div>
-          <div id="nvStatus" class="muted" style="font-size:.9rem" aria-live="polite"></div>
-          <p class="note" style="font-size:.88rem;margin:0">네이버 지도 창에서 <b>대중교통</b> 경로를 보고, 오른쪽 학습지를 채워요.<br>길찾기 화면이 안 나오면 '출발지/도착지 찾아보기'에서 <b>[출발] [도착]</b> 버튼을 눌러요.</p>
-        </div>
-        <div class="mapCtl noprint">
-          <button id="mzIn" title="지도 확대">＋</button>
-          <button id="mzOut" title="지도 축소">－</button>
-          <button id="mzFull" title="전체 화면">⛶</button>
-        </div>
+  <div class="splitGrid">
+    <!-- 왼쪽: 네이버 지도 길찾기 -->
+    <div class="card noprint" id="nvPane">
+      <h2><span style="color:#03c75a;font-weight:900">N</span> 네이버 지도로 길 찾기</h2>
+      <div class="field"><label for="orig">📍 출발</label>
+        <div class="row"><input id="orig" value="혜화역" style="flex:1;min-width:8rem"><button id="myLoc" title="지금 있는 곳">내 위치</button></div></div>
+      <div class="row" style="justify-content:center"><button id="swap" title="출발과 도착 바꾸기">⇅ 출발·도착 바꾸기</button></div>
+      <div class="field"><label for="dest">🚩 도착</label><input id="dest" value="서울역"></div>
+      <button class="big" id="goBtn" style="width:100%;background:#03c75a;color:#fff;border-color:#03c75a;font-weight:800">🔍 네이버 지도로 길찾기</button>
+      <div class="row" style="margin-top:.6rem">
+        <button id="splitBtn" class="pri">🪟 화면 나눠서 보기</button>
+        <label class="row" style="gap:.3rem" id="nvSideWrap"><input type="checkbox" id="nvSide" checked style="min-height:auto">지도를 옆 창으로 열기</label>
       </div>
-      <div class="row noprint" style="margin-top:.5rem">
-        <a id="gmLink" target="_blank" rel="noopener">구글맵에서 크게 열기 ↗</a>
+      <div class="row" style="margin-top:.5rem">
+        <button id="nvSearchO">📍 출발지 찾아보기</button>
+        <button id="nvSearchD">🚩 도착지 찾아보기</button>
+        <button id="nvApp">📱 네이버 지도 앱</button>
       </div>
-      <div class="card" id="routeCard" style="margin-top:1rem">
-        <h2>경로 안내</h2>
-        <div id="routeList" class="muted">구글 지도 API 키를 설정하면 여기에 경로, 정거장 수, 출발·도착 시각이 나와요. 키가 없으면 왼쪽 지도의 경로를 보고 학습지를 써요.</div>
+      <div id="nvStatus" class="muted" style="font-size:.9rem;margin-top:.4rem" aria-live="polite"></div>
+      <p class="note" id="splitTip" style="margin-top:.6rem"></p>
+      <h3>이렇게 해요</h3>
+      <div id="routeList"></div>
+      <!-- 예전 구글 지도 요소 (사용 안 함, 코드 호환용) -->
+      <div hidden>
+        <select id="provider"><option value="naver">네이버 지도</option></select>
+        <select id="tmode"><option value="ALL">버스+지하철</option></select><input id="depTime" type="time">
+        <span id="mapModeBadge"></span><a id="gmLink"></a><div id="nvRouteText"></div><button id="nvRoute"></button>
+        <div id="mapWrap"><div id="map"></div><iframe id="mapFrame" title="지도"></iframe><div id="naverPanel"></div>
+          <div class="mapCtl"><button id="mzIn"></button><button id="mzOut"></button><button id="mzFull"></button></div></div>
       </div>
     </div>
-    <div class="card">
+    <!-- 오른쪽: 길찾기 학습지 -->
+    <div class="card" id="sheetPane">
       <h2>✏️ 길찾기 학습지</h2>
-      <p class="muted" style="margin-top:0">지도를 보고 빈칸을 채워요.</p>
+      <p class="muted" style="margin-top:0">네이버 지도의 대중교통 경로를 보고 빈칸을 채워요.</p>
       <div class="qs" id="mapQs"></div>
       <div class="row noprint" style="margin-top:.8rem">
-        <button class="pri" id="mapCheck">정답 확인</button>
+        <button class="pri" id="mapCheck">다 썼어요</button>
         <button id="mapClear">지우기</button>
-        <button id="mapRead">🔊 경로 읽어 주기</button>
+        <button id="mapRead">🔊 문제 읽어 주기</button>
       </div>
       <div id="mapResult"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ② 실시간 -->
-<section class="tab" id="t-live">
-  <div class="card">
-    <h2>🚇 지하철 실시간 도착</h2>
-    <div class="row">
-      <label for="subSt">역 이름</label><input id="subSt" value="혜화" style="width:10rem">
-      <button class="pri" id="subGo">도착 정보 보기</button>
-      <label class="row" style="gap:.3rem"><input type="checkbox" id="subAuto" checked style="min-height:auto">30초마다 새로고침</label>
-      <span id="subBadge"></span>
-    </div>
-    <p class="muted" id="subTime"></p>
-    <div class="arr" id="subList"></div>
-  </div>
-  <div class="card">
-    <h2>🚌 버스 실시간 도착</h2>
-    <div class="row">
-      <label for="busArs">정류소 번호(5자리)</label><input id="busArs" value="01218" style="width:8rem" inputmode="numeric">
-      <button class="pri" id="busGo">도착 정보 보기</button>
-      <span id="busBadge"></span>
-    </div>
-    <p class="muted" style="font-size:.9rem">정류소 번호는 정류장 표지판이나 구글맵의 정류장 정보에서 찾을 수 있어요.</p>
-    <p class="muted" id="busTime"></p>
-    <div class="arr" id="busList"></div>
-  </div>
-  <div class="card">
-    <h2>✏️ 실시간 정보 학습지</h2>
-    <div class="qs">
-      <label>1. 내가 찾아본 역(정류장) 이름</label><input><span></span>
-      <label>2. 가장 먼저 오는 열차(버스)</label><input placeholder="예: 사당행 / 273번"><span></span>
-      <label>3. 몇 분 후에 도착하나요?</label><input placeholder="○분"><span></span>
-      <label>4. 그다음 차는 몇 분 후에 오나요?</label><input placeholder="○분"><span></span>
     </div>
   </div>
 </section>
@@ -465,13 +417,10 @@ body.showKey .script{display:block}
 <dialog id="settings">
   <form method="dialog">
     <h2 style="margin-top:0">⚙ 설정</h2>
-    <p class="note">API 키는 이 컴퓨터의 브라우저에만 저장돼요. 키가 없어도 연습 모드로 모든 기능을 쓸 수 있어요.</p>
-    <div class="field"><label for="kGoogle">구글 지도 JavaScript API 키 <span class="muted">(경로·시간 자동 표시, 정답 자동 채점)</span></label><input id="kGoogle" placeholder="AIza..."></div>
-    <div class="field"><label for="kSubway">서울 열린데이터광장 지하철 실시간 도착 인증키</label><input id="kSubway" placeholder="data.seoul.go.kr 에서 발급"></div>
-    <div class="field"><label for="kBus">공공데이터포털 서울 버스 도착정보 서비스키</label><input id="kBus" placeholder="data.go.kr 에서 발급 (인코딩 안 된 키)"></div>
+    <p class="note">API 키는 이 컴퓨터의 브라우저에만 저장돼요. 키가 없어도 모든 기능을 쓸 수 있어요.</p>
+    <div class="field"><label for="kGoogle">(선택) 구글 API 키 <span class="muted">— 없어도 돼요. 넣으면 네이버 길찾기용 장소 위치를 더 정확하게 찾아요 (Geocoding API)</span></label><input id="kGoogle" placeholder="AIza..."></div>
     <h3>🔗 키가 들어간 공유 주소</h3>
     <p class="muted" style="font-size:.9rem;margin:.2rem 0">이 주소로 들어오면 학생 기기에 구글 지도 키가 자동으로 들어가요. 주소를 받은 사람은 키를 볼 수 있으니, Google Cloud에서 키를 이 사이트(웹사이트 제한)에서만 쓰이게 꼭 막아 두세요.</p>
-    <label class="row" style="gap:.3rem;font-weight:400"><input type="checkbox" id="shareAll" style="min-height:auto">지하철·버스 키도 함께 넣기</label>
     <div class="row" style="margin-top:.4rem"><input id="shareOut" readonly style="flex:1;min-width:12rem" aria-label="공유 주소"><button type="button" id="shareMake">주소 만들고 복사</button></div>
     <h3>나만의 노선 추가</h3>
     <div class="field"><label for="cName">노선 이름</label><input id="cName" placeholder="예: 우리 학교 가는 버스 (143번)"></div>
@@ -617,8 +566,8 @@ let cfg = Object.assign({google:'', subway:'', bus:'', custom:null}, store.get('
 function shareUrl(){
   const base = location.protocol.startsWith('http') ? location.origin+location.pathname : SITE_URL;
   const qp=new URLSearchParams();
-  const g=$('#kGoogle').value.trim(), s=$('#kSubway').value.trim(), b=$('#kBus').value.trim();
-  if(g) qp.set('gkey',g); if(s && $('#shareAll').checked) qp.set('skey',s); if(b && $('#shareAll').checked) qp.set('bkey',b);
+  const g=$('#kGoogle').value.trim();
+  if(g) qp.set('gkey',g);
   return base + (qp.toString()? '?'+qp : '');
 }
 function loadCustom(){
@@ -629,7 +578,7 @@ function loadCustom(){
   fillLineSelects();
 }
 $('#settingsBtn').onclick=()=>{
-  $('#kGoogle').value=cfg.google||''; $('#kSubway').value=cfg.subway||''; $('#kBus').value=cfg.bus||'';
+  $('#kGoogle').value=cfg.google||'';
   $('#cName').value=cfg.custom?.name||''; $('#cType').value=cfg.custom?.type||'bus'; $('#cStops').value=(cfg.custom?.stops||[]).join(', ');
   $('#settings').showModal();
 };
@@ -643,7 +592,7 @@ $('#settings').addEventListener('close',()=>{
   if($('#settings').returnValue!=='save') return;
   const oldG=cfg.google;
   const stops=$('#cStops').value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
-  cfg={google:$('#kGoogle').value.trim(), subway:$('#kSubway').value.trim(), bus:$('#kBus').value.trim(),
+  cfg={google:$('#kGoogle').value.trim(), subway:cfg.subway||'', bus:cfg.bus||'',
        custom: stops.length>=2 ? {name:$('#cName').value.trim(), type:$('#cType').value, stops} : null};
   store.set('cfg',cfg); loadCustom(); toast('설정을 저장했어요');
   if(cfg.google!==oldG) location.reload();
@@ -680,7 +629,7 @@ function loadGoogle(key){
   return new Promise((res,rej)=>{
     if(window.google?.maps) return res();
     window.__gmInit=()=>res();
-    window.gm_authFailure=()=>{ toast('구글 지도 API 키가 올바르지 않아요. 기본 지도로 바꿀게요.'); useIframe(); };
+    window.gm_authFailure=()=>{ toast('구글 API 키가 올바르지 않아요. 키 없이 위치를 찾을게요.'); try{ delete window.google; }catch(e){ window.google=undefined; } };
     const s=document.createElement('script');
     s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&language=ko&region=KR&callback=__gmInit`;
     s.async=true; s.onerror=rej; document.head.appendChild(s);
@@ -689,7 +638,7 @@ function loadGoogle(key){
 function useIframe(){ gmap=null; $('#map').style.display='none'; $('#mapFrame').style.display='block'; $('#mapModeBadge').textContent='기본 지도 (키 없음)'; iframeRoute(); applyProvider(); }
 
 /* ---------- 네이버 지도 ---------- */
-const isNaver = () => $('#provider').value==='naver';
+const isNaver = () => true;   // 길찾기는 네이버 지도로만
 function applyProvider(){
   const nv=isNaver();
   $('#naverPanel').style.display = nv? 'flex':'none';
@@ -699,7 +648,12 @@ function applyProvider(){
   $('#nvSideWrap').style.display = nv? '':'none';
   $('#gmLink').style.display = nv? 'none':'';
   $('#mapModeBadge').textContent = nv? '네이버 지도' : (gmap? '구글 지도 API 사용 중' : '기본 구글 지도 (키 없음)');
-  if(nv){ answerKey=null; $('#routeList').innerHTML='<p class="muted">네이버 지도 창에 나온 경로를 보고 학습지를 써요. 자동 채점은 구글 지도(API 키)를 쓸 때만 되고, 네이버 지도를 쓸 때는 선생님과 함께 확인해요.</p>'; }
+  if(nv){ answerKey=null; $('#routeList').innerHTML=`<ol style="margin:0;padding-left:1.4rem;line-height:1.9">
+      <li><b>출발</b>과 <b>도착</b>을 써요.</li>
+      <li>초록색 <b>[네이버 지도로 길찾기]</b> 버튼을 눌러요.</li>
+      <li>네이버 지도에서 <b>대중교통</b>이 선택되어 있는지 봐요.</li>
+      <li>경로 하나를 눌러 <b>타는 곳 · 버스 번호(호선) · 내리는 곳 · 정거장 수 · 시간</b>을 확인해요.</li>
+      <li>오른쪽 학습지에 써요. 다 쓰면 선생님과 함께 확인해요.</li></ol>`; }
   else if(!gmap) $('#routeList').innerHTML='<p class="muted">구글 지도 API 키를 설정하면 여기에 경로, 정거장 수, 출발·도착 시각이 나와요.</p>';
   store.set('provider',$('#provider').value);
 }
@@ -723,10 +677,32 @@ async function geocode(q){
 }
 const nvPart = p => { const [x,y]=toMerc(p.lat,p.lng); return `${x.toFixed(7)},${y.toFixed(7)},${encodeURIComponent(p.name)},,`; };
 const nvSearchUrl = q => `https://map.naver.com/p/search/${encodeURIComponent(q.trim())}`;
+/* ---------- 화면 나누기: 왼쪽 학습지 창 + 오른쪽 네이버 지도 창 ---------- */
+const SPLIT = new URLSearchParams(location.search).get('split')==='1';
+const scr = () => ({L:screen.availLeft||0, T:screen.availTop||0, W:screen.availWidth||1280, H:screen.availHeight||800});
 function nvOpenWindow(){
-  if(!$('#nvSide').checked) return window.open('about:blank','_blank');
-  const W=screen.availWidth, H=screen.availHeight, w=Math.round(W*0.55);
-  return window.open('about:blank','naverMap',`width=${w},height=${H},left=${W-w},top=0`);
+  if(!SPLIT && !$('#nvSide').checked) return window.open('about:blank','_blank');
+  const {L,T,W,H}=scr();
+  let left, w;
+  if(SPLIT){ left = Math.min(L+W-400, window.screenX + window.outerWidth); w = L+W-left; }   // 학습지 창 바로 오른쪽 전부
+  else { w = Math.round(W*0.55); left = L+W-w; }
+  return window.open('about:blank','naverMap',`popup=yes,width=${w},height=${H},left=${left},top=${T}`);
+}
+$('#splitBtn').onclick=()=>{
+  const {L,T,W,H}=scr(), w=Math.max(460, Math.round(W*0.4));
+  const qp=new URLSearchParams({split:'1', o:$('#orig').value, d:$('#dest').value});
+  const win=window.open(location.pathname+'?'+qp, 'gilSheet', `popup=yes,width=${w},height=${H},left=${L},top=${T}`);
+  if(!win) return toast('팝업이 막혔어요. 주소창 오른쪽의 팝업 차단 표시를 눌러 허용해 주세요');
+  win.focus();
+};
+if(SPLIT){
+  document.body.classList.add('split');
+  const qp=new URLSearchParams(location.search);
+  if(qp.get('o')) $('#orig').value=qp.get('o'); if(qp.get('d')) $('#dest').value=qp.get('d');
+  $('#splitBtn').hidden=true; $('#nvSideWrap').hidden=true;
+  $('#splitTip').innerHTML='👉 초록 버튼을 누르면 <b>오른쪽</b>에 네이버 지도가 열려요. 지도를 보며 아래 학습지를 써요.';
+} else {
+  $('#splitTip').innerHTML='🪟 <b>화면 나눠서 보기</b>를 누르면 <b>왼쪽에는 학습지</b>, <b>오른쪽에는 네이버 지도</b>가 나란히 열려요.<br><span class="muted" style="font-size:.88rem">창이 안 열리면 팝업을 허용하거나, 이 창을 <b>Windows 키 + ←</b> 로 왼쪽에 붙인 뒤 초록 버튼을 눌러요.</span>';
 }
 function nvGo(win,url){ if(win && !win.closed){ win.location.href=url; win.focus(); } else location.href=url; }
 async function naverRoute(){
@@ -753,13 +729,14 @@ async function naverApp(){
   location.href='nmap://route/public?'+qp.toString();
   setTimeout(()=>toast('앱이 열리지 않으면 네이버 지도 앱을 설치하거나 위의 초록 버튼을 써요'),1800);
 }
-$('#provider').value = store.get('provider','naver');
-$('#provider').onchange=()=>{ applyProvider(); if(!isNaver() && gmap) routeJS(); };
 $('#nvRoute').onclick=naverRoute;
 $('#nvApp').onclick=naverApp;
 $('#nvSearchO').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#orig').value)); };
 $('#nvSearchD').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#dest').value)); };
 async function initMap(){
+  applyProvider(); updateLink();
+  /* 네이버 길찾기만 사용: 구글 키가 있으면 장소 위치 찾기(Geocoder)에만 씀 */
+  if(isNaver()){ if(cfg.google){ try{ await loadGoogle(cfg.google); }catch(e){} } return; }
   if(!cfg.google){ useIframe(); return; }
   try{
     await loadGoogle(cfg.google);
@@ -813,7 +790,8 @@ function buildKey(lg){
 }
 function mapCheck(){
   if(!answerKey){
-    $('#mapResult').innerHTML='<p class="note">자동 채점은 구글 지도 API 키가 있을 때만 돼요. 선생님과 함께 지도를 보며 확인해요. (⚙ 설정에서 키를 넣을 수 있어요)</p>'; return;
+    const filled=$$('#mapQs input').filter(i=>i.value.trim()).length;
+    $('#mapResult').innerHTML=`<p class="note">${MAP_QS.length}문제 중 ${filled}개를 썼어요. 네이버 지도 창의 경로와 하나씩 비교하며 선생님과 함께 확인해요.</p>`; return;
   }
   let okN=0, total=0;
   MAP_QS.forEach(([k])=>{
@@ -838,94 +816,11 @@ $('#myLoc').onclick=()=>{
 };
 $('#mapCheck').onclick=mapCheck;
 $('#mapClear').onclick=()=>{ $$('#mapQs input').forEach(i=>{i.value='';i.className='';}); $$('#mapQs .mark').forEach(m=>m.textContent=''); $('#mapResult').innerHTML=''; };
-$('#mapRead').onclick=()=> answerKey? speak(answerKey.speech) : speak(`${$('#orig').value}에서 ${$('#dest').value}까지 가는 길을 지도에서 찾아보세요.`);
+$('#mapRead').onclick=async()=>{ await speak(`${$('#orig').value}에서 ${$('#dest').value}까지 가는 길을 네이버 지도에서 찾아보세요.`);
+  for(const [,l] of MAP_QS){ await wait(400); await speak(l.replace(/^(\d+)\./,'$1번,').replace(/\(.*?\)/g,'')); } };
 $('#mzIn').onclick=()=>{ if(gmap) gmap.setZoom(gmap.getZoom()+1); else { iframeZoom=Math.min(20,iframeZoom+1); iframeRoute(); } };
 $('#mzOut').onclick=()=>{ if(gmap) gmap.setZoom(gmap.getZoom()-1); else { iframeZoom=Math.max(5,iframeZoom-1); iframeRoute(); } };
 $('#mzFull').onclick=()=>{ const w=$('#mapWrap'); document.fullscreenElement? document.exitFullscreen() : w.requestFullscreen?.(); };
-
-/* ===================== ② 실시간 도착 ===================== */
-let subTimer=null, tickTimer=null, subData=[], busData=[];
-function fmtSec(s){ s=Math.max(0,Math.round(s)); if(s<30) return '곧 도착'; const m=Math.floor(s/60), r=s%60; return m? `${m}분 ${r? r+'초':''} 후` : `${r}초 후`; }
-function findLinesOf(st){ return Object.values(LINES).filter(l=>l.type==='subway' && l.stops.some(s=>baseName(s)===st||s===st)); }
-function demoSubway(st){
-  let ls=findLinesOf(st); if(!ls.length) ls=[LINES.l4];
-  const out=[];
-  ls.forEach(l=>{ const i=Math.max(0,l.stops.findIndex(s=>baseName(s)===st||s===st));
-    [[l.stops[l.stops.length-1],l.stops[i+1]||l.stops[i],'하행',l.stops[i-1]],[l.stops[0],l.stops[i-1]||l.stops[i],'상행',l.stops[i+1]]].forEach(([term,dir,ud,prev])=>{
-      const a=60+Math.random()*420;
-      out.push({line:l.short,color:l.color,head:`${baseName(term)}행 - ${baseName(dir)}방면`,ud,sec:a,from:prev?baseName(prev):'',sec2:a+240+Math.random()*300});
-    });
-  });
-  return out;
-}
-function renderSub(){
-  $('#subList').innerHTML = subData.length? subData.map(d=>`<div class="arrCard" style="--lc:${esc(d.color)}">
-    <span class="chip" style="background:${esc(d.color)}">${esc(d.line)}</span> <b>${esc(d.ud||'')}</b><div style="font-weight:700;margin:.2rem 0">${esc(d.head)}</div>
-    <div class="t">${d.msg? esc(d.msg) : fmtSec(d.sec)}</div>${d.sec2? `<div class="muted">다음 차: ${fmtSec(d.sec2)}</div>`:''}
-    ${d.from? `<div class="muted">현재: ${esc(d.from)}</div>`:''}
-    <button class="noprint" style="margin-top:.4rem" data-say="${esc(`${d.line} ${d.head.split(' - ')[0]} 열차가 ${d.msg||fmtSec(d.sec)} 도착합니다.`)}">🔊 읽어 주기</button></div>`).join('')
-    : '<p class="muted">도착 정보가 없어요.</p>';
-}
-async function loadSubway(){
-  const st=baseName($('#subSt').value.trim().replace(/역$/,'')); if(!st) return;
-  let real=false;
-  if(cfg.subway){
-    try{
-      const r=await fetch(`http://swopenapi.seoul.go.kr/api/subway/${encodeURIComponent(cfg.subway)}/json/realtimeStationArrival/0/20/${encodeURIComponent(st)}`);
-      const j=await r.json(); const list=j.realtimeArrivalList||[];
-      if(list.length){ real=true;
-        subData=list.map(a=>{ const [nm,col]=SUBWAY_IDS[a.subwayId]||[a.subwayId,'#555'];
-          const sec=parseInt(a.barvlDt)||0;
-          return {line:nm,color:col,head:a.trainLineNm||'',ud:a.updnLine,sec, msg: sec>0? '' : (a.arvlMsg2||''), from:a.arvlMsg3||''}; });
-      } else if(j.errorMessage||j.status){ toast((j.errorMessage?.message||j.message||'정보 없음')); }
-    }catch(e){ console.warn(e); }
-  }
-  if(!real) subData=demoSubway(st);
-  $('#subBadge').innerHTML = real? '<span class="badge">실시간 정보</span>' : `<span class="badge demo">연습용 가상 정보${cfg.subway?' (서버 연결 실패)':''}</span>`;
-  $('#subTime').textContent = `${new Date().toLocaleTimeString('ko-KR')} 기준 · ${st}역`;
-  renderSub();
-}
-function demoBus(ars){
-  const nums=['연습 101','연습 272','연습 7025','연습 마을08'];
-  return nums.map(n=>{ const s=90+Math.random()*700; return {rt:n,dir:'연습용 노선 방면',sec:s,sec2:s+300+Math.random()*500,st:Math.max(1,Math.round(s/120))}; });
-}
-function renderBus(){
-  $('#busList').innerHTML = busData.length? busData.map(d=>`<div class="arrCard" style="--lc:var(--bus)">
-    <span class="chip" style="background:var(--bus)">${esc(d.rt)}</span> <span class="muted">${esc(d.dir||'')}</span>
-    <div class="t">${d.msg1? esc(d.msg1) : fmtSec(d.sec)+` <span style="font-size:1rem">[${Math.max(1,Math.round(d.sec/120))}번째 전]</span>`}</div>
-    <div class="muted">다음 차: ${d.msg2? esc(d.msg2) : fmtSec(d.sec2)}</div>
-    <button class="noprint" style="margin-top:.4rem" data-say="${esc(`${d.rt}번 버스가 ${d.msg1||fmtSec(d.sec)} 도착합니다.`)}">🔊 읽어 주기</button></div>`).join('')
-    : '<p class="muted">도착 정보가 없어요.</p>';
-}
-async function loadBus(){
-  const ars=$('#busArs').value.replace(/\D/g,''); let real=false, stName='';
-  if(cfg.bus && ars){
-    try{
-      const r=await fetch(`https://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?serviceKey=${encodeURIComponent(cfg.bus)}&arsId=${ars}&resultType=json`);
-      const j=await r.json(); const list=j.msgBody?.itemList||[];
-      if(list.length){ real=true; stName=list[0].stNm||'';
-        busData=list.map(a=>({rt:a.rtNm,dir:(a.adirection||'')+(a.adirection?' 방면':''),msg1:a.arrmsg1,msg2:a.arrmsg2})); }
-    }catch(e){ console.warn(e); }
-  }
-  if(!real) busData=demoBus(ars);
-  $('#busBadge').innerHTML = real? '<span class="badge">실시간 정보</span>' : `<span class="badge demo">연습용 가상 정보${cfg.bus?' (서버 연결 실패)':''}</span>`;
-  $('#busTime').textContent = `${new Date().toLocaleTimeString('ko-KR')} 기준 · 정류소 ${ars}${stName?' ('+stName+')':''}`;
-  renderBus();
-}
-document.addEventListener('click',e=>{ const b=e.target.closest('[data-say]'); if(b) speak(b.dataset.say); });
-$('#subGo').onclick=loadSubway; $('#busGo').onclick=loadBus;
-$('#subSt').onkeydown=e=>{ if(e.key==='Enter') loadSubway(); };
-$('#busArs').onkeydown=e=>{ if(e.key==='Enter') loadBus(); };
-function startLiveTimers(){
-  clearInterval(subTimer); clearInterval(tickTimer);
-  subTimer=setInterval(()=>{ if($('#subAuto').checked && $('#t-live').classList.contains('active')){ loadSubway(); loadBus(); } },30000);
-  tickTimer=setInterval(()=>{ // 가상/초단위 정보는 1초씩 줄이기
-    if(!$('#t-live').classList.contains('active')) return;
-    subData.forEach(d=>{ if(!d.msg){ d.sec--; if(d.sec2) d.sec2--; if(d.sec<0){ d.sec=d.sec2||300; d.sec2=d.sec+300; } } });
-    busData.forEach(d=>{ if(!d.msg1){ d.sec--; d.sec2--; if(d.sec<0){ d.sec=d.sec2; d.sec2=d.sec+400; } } });
-    if(subData.some(d=>!d.msg)) renderSub(); if(busData.some(d=>!d.msg1)) renderBus();
-  },1000);
-}
 
 /* ===================== ③ 역 이름 쓰기 ===================== */
 let sheet=null;
@@ -1307,7 +1202,7 @@ $('#dcLine').value='l4';
 $('#mkLine').value='bus'; mkRange(); mkCompose();
 ['#dcPlayBtn','#dcSlow','#dcHint','#dcSubmit','#dcSkip'].forEach(s=>$(s).disabled=true);
 $('#dcAsk').textContent="'문제 만들기'를 누르면 시작해요.";
-initMap(); loadSubway(); loadBus(); startLiveTimers();
+initMap();
 </script>
 </body>
 </html>
