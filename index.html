@@ -109,15 +109,22 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 #toast.show{opacity:1}
 .printHead{display:none}
 .printOnly{display:none}
-.splitGrid{display:grid;grid-template-columns:minmax(300px,1fr) 1.35fr;gap:1rem;align-items:start}
-.splitGrid #nvPane{position:sticky;top:7.5rem}
-@media (max-width:820px){.splitGrid{grid-template-columns:1fr}.splitGrid #nvPane{position:static}}
-body.split nav{display:none}
-body.split .splitGrid{grid-template-columns:1fr}
-body.split .splitGrid #nvPane{position:static}
-body.split main{padding:.5rem}
-body.split .topbar h1{font-size:1rem}
-@media print{.splitGrid{display:block}}
+.gwRow{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin:.3rem 0}
+.gwRow input{flex:1;min-width:7rem}
+.gwTrip{border:2px solid var(--line);border-radius:.8rem;padding:.8rem 1rem;margin:.9rem 0;break-inside:avoid}
+.gwHead{font-size:1.2rem;margin-bottom:.6rem;display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:center}
+.gwNo{display:inline-flex;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--pri);color:#fff;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.gwTable td{text-align:left;height:2.7rem;vertical-align:middle}
+.gwTable td:first-child{width:46%;font-weight:700}
+.gwTable .unit{float:right;color:var(--muted);font-weight:700}
+.gwFlow{display:flex;flex-wrap:wrap;align-items:stretch;gap:.35rem;margin-top:.7rem}
+.gwBox{flex:1 1 6.5rem;min-height:4.4rem;border:1.5px solid var(--ink);border-radius:.5rem;padding:.3rem .5rem;display:flex;flex-direction:column;gap:.2rem}
+.gwBox small{color:var(--muted);font-size:.8rem;font-weight:700}
+.gwBox b{font-size:1.05rem}
+.gwArrow{align-self:center;font-weight:900}
+.gwMemo{border:1.5px dashed var(--line);border-radius:.5rem;min-height:5.5rem;margin-top:.7rem;padding:.3rem .5rem;color:var(--muted);font-size:.85rem}
+.gwBreak .gwTrip+.gwTrip{break-before:page}
+@media print{.gwTrip,.gwBox{border-color:#000}.gwH{margin-top:0}.gwTrip{margin:.6rem 0;padding:.6rem .8rem}.gwTable td{height:2.1rem;padding:.25rem .6rem}.gwTable td:first-child{width:50%}.gwBox{min-height:3.8rem}}
 @media print{ .printOnly{display:block} .wordbank .wchip.used{opacity:1;text-decoration:none} }
 .mkItem{display:flex;gap:.5rem;align-items:center;border-top:1px dashed var(--line);padding:.35rem 0}
 .mkItem .tx{flex:1}
@@ -160,7 +167,7 @@ body.showKey .script{display:block}
   </div>
   <nav id="tabs">
     <button data-tab="t-map" class="active">① 길찾기</button>
-    <button data-tab="t-sheet">② 역 이름 쓰기</button>
+    <button data-tab="t-sheet">② 역 이름 듣고 찾기</button>
     <button data-tab="t-ride">③ 안내방송 듣고 내리기</button>
     <button data-tab="t-dict">④ 듣고 쓰기</button>
     <button data-tab="t-make">⑤ 방송 만들기·듣기 학습지</button>
@@ -170,58 +177,35 @@ body.showKey .script{display:block}
 <main>
 <!-- ① 길찾기 -->
 <section class="tab active" id="t-map">
-  <div class="printHead"><span>길찾기 학습지</span><span class="pName"></span><span class="pDate"></span></div>
-  <div class="splitGrid">
-    <!-- 왼쪽: 네이버 지도 길찾기 -->
-    <div class="card noprint" id="nvPane">
-      <h2><span style="color:#03c75a;font-weight:900">N</span> 네이버 지도로 길 찾기</h2>
-      <div class="field"><label for="orig">📍 출발</label>
-        <div class="row"><input id="orig" value="혜화역" style="flex:1;min-width:8rem"><button id="myLoc" title="지금 있는 곳">내 위치</button></div></div>
-      <div class="row" style="justify-content:center"><button id="swap" title="출발과 도착 바꾸기">⇅ 출발·도착 바꾸기</button></div>
-      <div class="field"><label for="dest">🚩 도착</label><input id="dest" value="서울역"></div>
-      <button class="big" id="goBtn" style="width:100%;background:#03c75a;color:#fff;border-color:#03c75a;font-weight:800">🔍 네이버 지도로 길찾기</button>
-      <div class="row" style="margin-top:.6rem">
-        <button id="splitBtn" class="pri">🪟 화면 나눠서 보기</button>
-        <label class="row" style="gap:.3rem" id="nvSideWrap"><input type="checkbox" id="nvSide" checked style="min-height:auto">지도를 옆 창으로 열기</label>
-      </div>
-      <div class="row" style="margin-top:.5rem">
-        <button id="nvSearchO">📍 출발지 찾아보기</button>
-        <button id="nvSearchD">🚩 도착지 찾아보기</button>
-        <button id="nvApp">📱 네이버 지도 앱</button>
-      </div>
-      <div id="nvStatus" class="muted" style="font-size:.9rem;margin-top:.4rem" aria-live="polite"></div>
-      <p class="note" id="splitTip" style="margin-top:.6rem"></p>
-      <h3>이렇게 해요</h3>
-      <div id="routeList"></div>
-      <!-- 예전 구글 지도 요소 (사용 안 함, 코드 호환용) -->
-      <div hidden>
-        <select id="provider"><option value="naver">네이버 지도</option></select>
-        <select id="tmode"><option value="ALL">버스+지하철</option></select><input id="depTime" type="time">
-        <span id="mapModeBadge"></span><a id="gmLink"></a><div id="nvRouteText"></div><button id="nvRoute"></button>
-        <div id="mapWrap"><div id="map"></div><iframe id="mapFrame" title="지도"></iframe><div id="naverPanel"></div>
-          <div class="mapCtl"><button id="mzIn"></button><button id="mzOut"></button><button id="mzFull"></button></div></div>
-      </div>
+  <div class="card noprint">
+    <h2>🗺 길찾기 학습지 만들기</h2>
+    <p class="muted" style="margin-top:0">출발·도착을 정하고 물어볼 문항을 고른 뒤 인쇄해요. 학생은 지도 앱이나 노선도를 보고 빈칸을 채워요.</p>
+    <div class="row"><label for="gwTitle">제목</label><input id="gwTitle" style="flex:1;min-width:14rem"></div>
+    <div class="row" style="margin-top:.4rem"><label for="gwGuideIn">안내 글</label><input id="gwGuideIn" style="flex:1;min-width:14rem"></div>
+    <h3>길찾기 문제</h3>
+    <div id="gwTrips"></div>
+    <div class="row" style="margin-top:.4rem">
+      <button id="gwAdd">＋ 문제 추가</button>
+      <button id="gwSample">예시 문제로 바꾸기</button>
     </div>
-    <!-- 오른쪽: 길찾기 학습지 -->
-    <div class="card" id="sheetPane">
-      <h2>✏️ 길찾기 학습지</h2>
-      <p class="muted" style="margin-top:0">네이버 지도의 대중교통 경로를 보고 빈칸을 채워요.</p>
-      <div class="qs" id="mapQs"></div>
-      <div class="row noprint" style="margin-top:.8rem">
-        <button class="pri" id="mapCheck">다 썼어요</button>
-        <button id="mapClear">지우기</button>
-        <button id="mapRead">🔊 문제 읽어 주기</button>
-      </div>
-      <div id="mapResult"></div>
+    <h3>물어볼 문항</h3>
+    <div class="row" id="gwQs" style="gap:.4rem 1.2rem"></div>
+    <h3>모양</h3>
+    <div class="row" style="gap:.4rem 1.2rem">
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwDiagram" style="min-height:auto">경로 그림 칸</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwMemo" style="min-height:auto">메모 칸</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwBreak" style="min-height:auto">문제마다 새 쪽에 인쇄</label>
     </div>
+    <div class="row" style="margin-top:.9rem"><button class="pri big" id="gwPrint">🖨 학습지 인쇄</button></div>
   </div>
+  <div class="card" id="gwOut"></div>
 </section>
 
 <!-- ③ 역 이름 쓰기 -->
 <section class="tab" id="t-sheet">
-  <div class="printHead"><span>역 이름 쓰기 학습지</span><span class="pName"></span><span class="pDate"></span></div>
+  <div class="printHead"><span>역 이름 듣고 찾기 학습지</span><span class="pName"></span><span class="pDate"></span></div>
   <div class="card noprint">
-    <h2>노선도 역 이름 찾아 쓰기</h2>
+    <h2>역 이름 듣고 찾기</h2>
     <div class="row">
       <label for="shLine">노선</label><select id="shLine"></select>
       <label for="shFrom">부터</label><select id="shFrom"></select>
@@ -417,11 +401,6 @@ body.showKey .script{display:block}
 <dialog id="settings">
   <form method="dialog">
     <h2 style="margin-top:0">⚙ 설정</h2>
-    <p class="note">API 키는 이 컴퓨터의 브라우저에만 저장돼요. 키가 없어도 모든 기능을 쓸 수 있어요.</p>
-    <div class="field"><label for="kGoogle">(선택) 구글 API 키 <span class="muted">— 없어도 돼요. 넣으면 네이버 길찾기용 장소 위치를 더 정확하게 찾아요 (Geocoding API)</span></label><input id="kGoogle" placeholder="AIza..."></div>
-    <h3>🔗 키가 들어간 공유 주소</h3>
-    <p class="muted" style="font-size:.9rem;margin:.2rem 0">이 주소로 들어오면 학생 기기에 구글 지도 키가 자동으로 들어가요. 주소를 받은 사람은 키를 볼 수 있으니, Google Cloud에서 키를 이 사이트(웹사이트 제한)에서만 쓰이게 꼭 막아 두세요.</p>
-    <div class="row" style="margin-top:.4rem"><input id="shareOut" readonly style="flex:1;min-width:12rem" aria-label="공유 주소"><button type="button" id="shareMake">주소 만들고 복사</button></div>
     <h3>나만의 노선 추가</h3>
     <div class="field"><label for="cName">노선 이름</label><input id="cName" placeholder="예: 우리 학교 가는 버스 (143번)"></div>
     <div class="field"><label for="cType">종류</label><select id="cType"><option value="bus">버스</option><option value="subway">지하철</option></select></div>
@@ -589,13 +568,6 @@ let cfg = Object.assign({google:'', subway:'', bus:'', custom:null}, store.get('
     try{ history.replaceState(null,'',location.pathname+(qp.toString()?'?'+qp:'')+location.hash); }catch(e){}
     setTimeout(()=>toast('주소에 들어 있던 API 키를 적용했어요'),600); }
 })();
-function shareUrl(){
-  const base = location.protocol.startsWith('http') ? location.origin+location.pathname : SITE_URL;
-  const qp=new URLSearchParams();
-  const g=$('#kGoogle').value.trim();
-  if(g) qp.set('gkey',g);
-  return base + (qp.toString()? '?'+qp : '');
-}
 function loadCustom(){
   LINES = {...BASE_LINES};
   if(cfg.custom && cfg.custom.stops && cfg.custom.stops.length>=2){
@@ -604,24 +576,15 @@ function loadCustom(){
   fillLineSelects();
 }
 $('#settingsBtn').onclick=()=>{
-  $('#kGoogle').value=cfg.google||'';
   $('#cName').value=cfg.custom?.name||''; $('#cType').value=cfg.custom?.type||'bus'; $('#cStops').value=(cfg.custom?.stops||[]).join(', ');
   $('#settings').showModal();
 };
-$('#shareMake').onclick=async()=>{
-  if(!$('#kGoogle').value.trim()) return toast('먼저 구글 지도 API 키를 넣어 주세요');
-  const u=shareUrl(); $('#shareOut').value=u; $('#shareOut').select();
-  try{ await navigator.clipboard.writeText(u); toast('주소를 복사했어요'); }
-  catch(e){ try{ document.execCommand('copy'); toast('주소를 복사했어요'); }catch(e2){ toast('주소를 직접 복사해 주세요'); } }
-};
 $('#settings').addEventListener('close',()=>{
   if($('#settings').returnValue!=='save') return;
-  const oldG=cfg.google;
   const stops=$('#cStops').value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
-  cfg={google:$('#kGoogle').value.trim(), subway:cfg.subway||'', bus:cfg.bus||'',
+  cfg={google:cfg.google||'', subway:cfg.subway||'', bus:cfg.bus||'',
        custom: stops.length>=2 ? {name:$('#cName').value.trim(), type:$('#cType').value, stops} : null};
   store.set('cfg',cfg); loadCustom(); toast('설정을 저장했어요');
-  if(cfg.google!==oldG) location.reload();
 });
 
 function fillLineSelects(){
@@ -632,222 +595,69 @@ function fillLineSelects(){
 }
 function fillStopSelect(sel, line, idx){ sel.innerHTML=LINES[line].stops.map((s,i)=>`<option value="${i}">${esc(s)}</option>`).join(''); sel.value=String(Math.min(idx, LINES[line].stops.length-1)); }
 
-/* ===================== ① 길찾기 ===================== */
-const MAP_QS = [
-  ['start','1. 출발하는 곳'],['end','2. 도착하는 곳'],['vehicle','3. 처음 타는 교통수단 (번호·호선)'],
-  ['board','4. 타는 정류장(역)'],['alight','5. 마지막에 내리는 정류장(역)'],['stops','6. 모두 몇 정거장을 가나요?'],
-  ['transfer','7. 갈아타야 하나요? (예/아니오)'],['mins','8. 모두 몇 분 걸리나요?'],['dep','9. 몇 시 몇 분에 차를 타나요?']
+/* ===================== ① 길찾기 학습지 ===================== */
+const GW_QS = [
+  ['vehicle','처음 타는 교통수단 (버스 번호 · 지하철 호선)','',true],
+  ['dir','어느 방면(방향)으로 타나요?','방면',false],
+  ['board','타는 정류장(역)','',true],
+  ['transfer','갈아타나요?','yn',true],
+  ['xfer','갈아타는 곳과 갈아탈 교통수단','',false],
+  ['alight','마지막에 내리는 정류장(역)','',true],
+  ['stops','모두 몇 정거장(역)을 가나요?','정거장',true],
+  ['walk','걷는 시간은 모두 몇 분인가요?','분',false],
+  ['mins','모두 몇 분 걸리나요?','분',true],
+  ['fare','요금은 얼마인가요?','원',false],
+  ['time','몇 시에 출발하면 몇 시에 도착하나요?','time',false]
 ];
-$('#mapQs').innerHTML = MAP_QS.map(([k,l])=>`<label for="mq_${k}">${l}</label><input id="mq_${k}" data-k="${k}"><span class="mark" id="mm_${k}"></span>`).join('');
-let answerKey=null, gmap=null, gService=null, gRenderer=null, lastRoutes=null, iframeZoom=14;
-const now=new Date(); $('#depTime').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-
-function updateLink(){
-  const o=$('#orig').value, d=$('#dest').value;
-  $('#gmLink').href=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&travelmode=transit`;
+const GW_SAMPLE = [['혜화역','서울역'],['혜화역','광화문'],['혜화역','잠실 롯데월드'],['혜화역','국립중앙박물관']];
+let gw = Object.assign({title:'대중교통 길찾기 학습지', guide:'지도 앱(네이버 지도, 카카오맵 등)에서 대중교통 길찾기를 하고 빈칸을 채워요.',
+  trips:GW_SAMPLE.slice(0,2).map(t=>t.slice()), qs:Object.fromEntries(GW_QS.map(q=>[q[0],q[3]])), diagram:true, memo:false, brk:false}, store.get('gw',{}));
+function gwSave(){ store.set('gw',gw); }
+function gwTripsUI(){
+  $('#gwTrips').innerHTML = gw.trips.map((t,i)=>`<div class="gwRow" data-i="${i}"><span class="gwNo">${i+1}</span>
+    <input data-f="0" value="${esc(t[0])}" placeholder="출발 (예: 혜화역)" aria-label="${i+1}번 출발">
+    <span class="gwArrow">→</span>
+    <input data-f="1" value="${esc(t[1])}" placeholder="도착 (예: 서울역)" aria-label="${i+1}번 도착">
+    <button data-act="swap" title="출발·도착 바꾸기">⇄</button><button data-act="del" title="이 문제 지우기">✕</button></div>`).join('')
+    || '<p class="muted">＋ 문제 추가를 눌러요.</p>';
 }
-function iframeRoute(){
-  const o=$('#orig').value.trim(), d=$('#dest').value.trim();
-  $('#mapFrame').src=`https://maps.google.com/maps?saddr=${encodeURIComponent(o)}&daddr=${encodeURIComponent(d)}&dirflg=r&hl=ko&z=${iframeZoom}&output=embed`;
-  updateLink();
-  $('#mq_start').value ||= o; $('#mq_end').value ||= d;
+$('#gwTrips').addEventListener('input',e=>{ const r=e.target.closest('.gwRow'); if(!r||!e.target.dataset.f) return; gw.trips[+r.dataset.i][+e.target.dataset.f]=e.target.value; gwSave(); gwRender(); });
+$('#gwTrips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const i=+b.closest('.gwRow').dataset.i;
+  if(b.dataset.act==='del') gw.trips.splice(i,1); else gw.trips[i]=[gw.trips[i][1],gw.trips[i][0]];
+  gwSave(); gwTripsUI(); gwRender(); });
+$('#gwAdd').onclick=()=>{ gw.trips.push(['','']); gwSave(); gwTripsUI(); gwRender(); const ins=$$('#gwTrips input'); ins[ins.length-2]?.focus(); };
+$('#gwSample').onclick=()=>{ gw.trips=GW_SAMPLE.map(t=>t.slice()); gwSave(); gwTripsUI(); gwRender(); };
+$('#gwQs').innerHTML = GW_QS.map(([k,l])=>`<label class="row" style="gap:.3rem"><input type="checkbox" data-k="${k}" style="min-height:auto">${esc(l)}</label>`).join('');
+function gwAnswer(u){
+  if(u==='yn') return '<b>예 &nbsp;·&nbsp; 아니오</b> <span class="muted" style="font-size:.85rem">(동그라미)</span>';
+  if(u==='time') return '<b>&emsp;&ensp;시 &emsp;&ensp;분 출발 → &emsp;&ensp;시 &emsp;&ensp;분 도착</b>';
+  return u? `<span class="unit">${u}</span>` : '';
 }
-function loadGoogle(key){
-  return new Promise((res,rej)=>{
-    if(window.google?.maps) return res();
-    window.__gmInit=()=>res();
-    window.gm_authFailure=()=>{ toast('구글 API 키가 올바르지 않아요. 키 없이 위치를 찾을게요.'); try{ delete window.google; }catch(e){ window.google=undefined; } };
-    const s=document.createElement('script');
-    s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&language=ko&region=KR&callback=__gmInit`;
-    s.async=true; s.onerror=rej; document.head.appendChild(s);
-  });
+function gwRender(){
+  const qs=GW_QS.filter(q=>gw.qs[q[0]]), trips=gw.trips.filter(t=>t[0].trim()||t[1].trim());
+  const box=(cap,val)=>`<div class="gwBox"><small>${cap}</small>${val?`<b>${esc(val)}</b>`:''}</div>`, ar='<span class="gwArrow">→</span>';
+  $('#gwOut').classList.toggle('gwBreak',!!gw.brk);
+  $('#gwOut').innerHTML = `<div class="printHead"><span class="pDate"></span><span class="pName"></span></div>
+    <h2 class="gwH">${esc(gw.title)}</h2>${gw.guide?`<p class="muted" style="margin-top:0">${esc(gw.guide)}</p>`:''}` +
+    (trips.length? trips.map((t,i)=>`<div class="gwTrip">
+      <div class="gwHead"><span class="gwNo">${i+1}</span><span>🟢 출발 <b>${esc(t[0])}</b></span><span class="gwArrow">→</span><span>🚩 도착 <b>${esc(t[1])}</b></span></div>
+      ${qs.length?`<table class="gwTable">${qs.map(([k,l,u])=>`<tr><td>${esc(l)}</td><td>${gwAnswer(u)}</td></tr>`).join('')}</table>`:''}
+      ${gw.diagram?`<div class="gwFlow">${box('출발',t[0])}${ar}${box('🚇🚌 타는 곳')}${ar}${box('🔁 갈아타는 곳')}${ar}${box('🔔 내리는 곳')}${ar}${box('도착',t[1])}</div>`:''}
+      ${gw.memo?'<div class="gwMemo">메모</div>':''}</div>`).join('')
+    : '<p class="muted">위에서 길찾기 문제를 넣어요.</p>');
+  syncPrintHead();
 }
-function useIframe(){ gmap=null; $('#map').style.display='none'; $('#mapFrame').style.display='block'; $('#mapModeBadge').textContent='기본 지도 (키 없음)'; iframeRoute(); applyProvider(); }
-
-/* ---------- 네이버 지도 ---------- */
-const isNaver = () => true;   // 길찾기는 네이버 지도로만
-function applyProvider(){
-  const nv=isNaver();
-  $('#naverPanel').style.display = nv? 'flex':'none';
-  $('#map').style.display = !nv && gmap ? 'block':'none';
-  $('#mapFrame').style.display = !nv && !gmap ? 'block':'none';
-  $('.mapCtl').style.display = nv? 'none':'';
-  $('#nvSideWrap').style.display = nv? '':'none';
-  $('#gmLink').style.display = nv? 'none':'';
-  $('#mapModeBadge').textContent = nv? '네이버 지도' : (gmap? '구글 지도 API 사용 중' : '기본 구글 지도 (키 없음)');
-  if(nv){ answerKey=null; $('#routeList').innerHTML=`<ol style="margin:0;padding-left:1.4rem;line-height:1.9">
-      <li><b>출발</b>과 <b>도착</b>을 써요.</li>
-      <li>초록색 <b>[네이버 지도로 길찾기]</b> 버튼을 눌러요.</li>
-      <li>네이버 지도에서 <b>대중교통</b>이 선택되어 있는지 봐요.</li>
-      <li>경로 하나를 눌러 <b>타는 곳 · 버스 번호(호선) · 내리는 곳 · 정거장 수 · 시간</b>을 확인해요.</li>
-      <li>오른쪽 학습지에 써요. 다 쓰면 선생님과 함께 확인해요.</li></ol>`; }
-  else if(!gmap) $('#routeList').innerHTML='<p class="muted">구글 지도 API 키를 설정하면 여기에 경로, 정거장 수, 출발·도착 시각이 나와요.</p>';
-  store.set('provider',$('#provider').value);
+function gwInit(){
+  $('#gwTitle').value=gw.title; $('#gwGuideIn').value=gw.guide;
+  $$('#gwQs input').forEach(c=>c.checked=!!gw.qs[c.dataset.k]);
+  $('#gwDiagram').checked=!!gw.diagram; $('#gwMemo').checked=!!gw.memo; $('#gwBreak').checked=!!gw.brk;
+  gwTripsUI(); gwRender();
 }
-/* 위경도 → 네이버 웹 지도 좌표(EPSG:3857) */
-const toMerc = (lat,lng) => [lng*20037508.34/180, Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180)*20037508.34/180];
-const geoCache = store.get('geo',{});
-async function geocode(q){
-  q=q.trim(); const m=q.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
-  if(m) return {lat:+m[1],lng:+m[2],name:'내 위치'};
-  if(geoCache[q]) return geoCache[q];
-  let r=null;
-  if(window.google?.maps?.Geocoder){
-    try{ const g=await new google.maps.Geocoder().geocode({address:q,region:'KR'}); const l=g.results[0].geometry.location; r={lat:l.lat(),lng:l.lng(),name:q}; }catch(e){}
-  }
-  if(!r){
-    try{ const j=await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))).json();
-      if(j[0]) r={lat:+j[0].lat,lng:+j[0].lon,name:q}; }catch(e){}
-  }
-  if(r){ geoCache[q]=r; store.set('geo',geoCache); }
-  return r;
-}
-const nvPart = p => { const [x,y]=toMerc(p.lat,p.lng); return `${x.toFixed(7)},${y.toFixed(7)},${encodeURIComponent(p.name)},,`; };
-const nvSearchUrl = q => `https://map.naver.com/p/search/${encodeURIComponent(q.trim())}`;
-/* ---------- 화면 나누기: 왼쪽 학습지 창 + 오른쪽 네이버 지도 창 ---------- */
-const SPLIT = new URLSearchParams(location.search).get('split')==='1';
-const scr = () => ({L:screen.availLeft||0, T:screen.availTop||0, W:screen.availWidth||1280, H:screen.availHeight||800});
-function nvOpenWindow(){
-  if(!SPLIT && !$('#nvSide').checked) return window.open('about:blank','_blank');
-  const {L,T,W,H}=scr();
-  let left, w;
-  if(SPLIT){ left = Math.min(L+W-400, window.screenX + window.outerWidth); w = L+W-left; }   // 학습지 창 바로 오른쪽 전부
-  else { w = Math.round(W*0.55); left = L+W-w; }
-  return window.open('about:blank','naverMap',`popup=yes,width=${w},height=${H},left=${left},top=${T}`);
-}
-$('#splitBtn').onclick=()=>{
-  const {L,T,W,H}=scr(), w=Math.max(460, Math.round(W*0.4));
-  const qp=new URLSearchParams({split:'1', o:$('#orig').value, d:$('#dest').value});
-  const win=window.open(location.pathname+'?'+qp, 'gilSheet', `popup=yes,width=${w},height=${H},left=${L},top=${T}`);
-  if(!win) return toast('팝업이 막혔어요. 주소창 오른쪽의 팝업 차단 표시를 눌러 허용해 주세요');
-  win.focus();
-};
-if(SPLIT){
-  document.body.classList.add('split');
-  const qp=new URLSearchParams(location.search);
-  if(qp.get('o')) $('#orig').value=qp.get('o'); if(qp.get('d')) $('#dest').value=qp.get('d');
-  $('#splitBtn').hidden=true; $('#nvSideWrap').hidden=true;
-  $('#splitTip').innerHTML='👉 초록 버튼을 누르면 <b>오른쪽</b>에 네이버 지도가 열려요. 지도를 보며 아래 학습지를 써요.';
-} else {
-  $('#splitTip').innerHTML='🪟 <b>화면 나눠서 보기</b>를 누르면 <b>왼쪽에는 학습지</b>, <b>오른쪽에는 네이버 지도</b>가 나란히 열려요.<br><span class="muted" style="font-size:.88rem">창이 안 열리면 팝업을 허용하거나, 이 창을 <b>Windows 키 + ←</b> 로 왼쪽에 붙인 뒤 초록 버튼을 눌러요.</span>';
-}
-function nvGo(win,url){ if(win && !win.closed){ win.location.href=url; win.focus(); } else location.href=url; }
-async function naverRoute(){
-  const o=$('#orig').value.trim(), d=$('#dest').value.trim();
-  if(!o||!d) return toast('출발과 도착을 써 주세요');
-  $('#mq_start').value=o; $('#mq_end').value=d;
-  $('#nvRouteText').innerHTML=`<b>${esc(o)}</b> → <b>${esc(d)}</b>`;
-  const win=nvOpenWindow();   // 팝업 차단을 피하려고 먼저 창을 연다
-  $('#nvStatus').textContent='장소 위치를 찾는 중…';
-  const [a,b]=await Promise.all([geocode(o),geocode(d)]);
-  if(!a||!b){
-    $('#nvStatus').textContent=`'${!a?o:d}' 위치를 찾지 못해 장소 검색 화면을 열었어요. [출발] [도착] 버튼으로 길찾기를 해요.`;
-    return nvGo(win, nvSearchUrl(!b? d : o));
-  }
-  const url=`https://map.naver.com/p/directions/${nvPart(a)}/${nvPart(b)}/-/transit`;
-  $('#nvStatus').textContent='네이버 지도 창을 열었어요.';
-  nvGo(win,url);
-}
-async function naverApp(){
-  const o=$('#orig').value.trim(), d=$('#dest').value.trim();
-  const [a,b]=await Promise.all([geocode(o),geocode(d)]);
-  if(!b) return toast('도착지 위치를 찾지 못했어요');
-  const qp=new URLSearchParams({...(a?{slat:a.lat,slng:a.lng,sname:a.name}:{}), dlat:b.lat, dlng:b.lng, dname:b.name, appname:SITE_URL});
-  location.href='nmap://route/public?'+qp.toString();
-  setTimeout(()=>toast('앱이 열리지 않으면 네이버 지도 앱을 설치하거나 위의 초록 버튼을 써요'),1800);
-}
-$('#nvRoute').onclick=naverRoute;
-$('#nvApp').onclick=naverApp;
-$('#nvSearchO').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#orig').value)); };
-$('#nvSearchD').onclick=()=>{ const w=nvOpenWindow(); nvGo(w,nvSearchUrl($('#dest').value)); };
-async function initMap(){
-  applyProvider(); updateLink();
-  /* 네이버 길찾기만 사용: 구글 키가 있으면 장소 위치 찾기(Geocoder)에만 씀 */
-  if(isNaver()){ if(cfg.google){ try{ await loadGoogle(cfg.google); }catch(e){} } return; }
-  if(!cfg.google){ useIframe(); return; }
-  try{
-    await loadGoogle(cfg.google);
-    $('#mapFrame').style.display='none'; $('#map').style.display='block';
-    gmap=new google.maps.Map($('#map'),{center:{lat:37.5822,lng:127.0018},zoom:14,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,zoomControl:false});
-    new google.maps.TransitLayer().setMap(gmap);
-    gService=new google.maps.DirectionsService();
-    gRenderer=new google.maps.DirectionsRenderer({map:gmap});
-    applyProvider();
-    if(!isNaver()) routeJS();
-  }catch(e){ useIframe(); }
-}
-function departDate(){ const [h,m]=($('#depTime').value||'').split(':').map(Number); const d=new Date(); if(!isNaN(h)){ d.setHours(h,m||0,0,0); } return d; }
-function routeJS(){
-  const modes = $('#tmode').value==='ALL' ? undefined : [$('#tmode').value];
-  updateLink();
-  gService.route({origin:$('#orig').value, destination:$('#dest').value, travelMode:'TRANSIT', provideRouteAlternatives:true,
-    transitOptions:{departureTime:departDate(), ...(modes?{modes}:{} )}},
-  (r,status)=>{
-    if(status!=='OK'){ $('#routeList').innerHTML=`<p class="bad">경로를 찾지 못했어요 (${esc(status)}). 장소 이름을 더 자세히 써 보세요.</p>`; answerKey=null; return; }
-    lastRoutes=r; gRenderer.setDirections(r); gRenderer.setRouteIndex(0); renderRoutes(r,0);
-  });
-}
-const vehIcon = t => ({BUS:'🚌',INTERCITY_BUS:'🚌',TROLLEYBUS:'🚌',SUBWAY:'🚇',METRO_RAIL:'🚇',HEAVY_RAIL:'🚆',COMMUTER_TRAIN:'🚆',RAIL:'🚆',TRAM:'🚋',FERRY:'⛴'}[t]||'🚍');
-function renderRoutes(r, sel){
-  $('#routeList').innerHTML = r.routes.map((rt,i)=>{
-    const lg=rt.legs[0];
-    const steps=lg.steps.map(s=>{
-      if(s.travel_mode==='TRANSIT'){ const t=s.transit, c=t.line.color||'#555', tc=t.line.text_color||'#fff';
-        return `<div class="step"><span style="font-size:1.4rem">${vehIcon(t.line.vehicle?.type)}</span><div>
-          <span class="chip" style="background:${esc(c)};color:${esc(tc)}">${esc(t.line.short_name||t.line.name)}</span> ${esc(t.headsign? t.headsign+' 방면':'')}<br>
-          <b>${esc(t.departure_stop.name)}</b>에서 타고 → <b>${esc(t.arrival_stop.name)}</b>에서 내려요<br>
-          <span class="muted">${t.num_stops}정거장 · ${esc(s.duration.text)} · ${esc(t.departure_time?.text||'')} 출발 → ${esc(t.arrival_time?.text||'')} 도착</span></div></div>`; }
-      return `<div class="step"><span style="font-size:1.4rem">🚶</span><div>${esc(s.instructions||'걷기')} <span class="muted">(${esc(s.duration.text)}, ${esc(s.distance.text)})</span></div></div>`;
-    }).join('');
-    return `<div class="routeOpt ${i===sel?'sel':''}" data-i="${i}"><div class="row" style="justify-content:space-between"><b>경로 ${i+1}</b>
-      <span><b style="font-size:1.2rem">${esc(lg.duration.text)}</b> <span class="muted">${esc(lg.departure_time?.text||'')} → ${esc(lg.arrival_time?.text||'')}</span></span></div>${i===sel?steps:''}</div>`;
-  }).join('') + '<p class="muted" style="font-size:.85rem">시간은 구글 지도의 대중교통 시간표 기준이에요.</p>';
-  $$('#routeList .routeOpt').forEach(el=>el.onclick=()=>{ const i=+el.dataset.i; gRenderer.setRouteIndex(i); renderRoutes(lastRoutes,i); });
-  buildKey(r.routes[sel].legs[0]);
-}
-function buildKey(lg){
-  const tr=lg.steps.filter(s=>s.travel_mode==='TRANSIT');
-  if(!tr.length){ answerKey=null; return; }
-  const f=tr[0].transit, l=tr[tr.length-1].transit;
-  answerKey={ start:$('#orig').value, end:$('#dest').value, vehicle:f.line.short_name||f.line.name,
-    board:f.departure_stop.name, alight:l.arrival_stop.name, stops:tr.reduce((a,s)=>a+s.transit.num_stops,0),
-    transfer: tr.length>1?'예':'아니오', mins:Math.round(lg.duration.value/60), dep:f.departure_time?.text||'',
-    speech: `${f.departure_stop.name}에서 ${f.line.short_name||f.line.name}을 타요. ` + tr.map((s,i)=>(i?`${s.transit.departure_stop.name}에서 ${s.transit.line.short_name||s.transit.line.name}으로 갈아타요. `:'')+`${s.transit.num_stops}정거장 가서 ${s.transit.arrival_stop.name}에서 내려요.`).join(' ') + ` 모두 ${Math.round(lg.duration.value/60)}분 걸려요.`
-  };
-}
-function mapCheck(){
-  if(!answerKey){
-    const filled=$$('#mapQs input').filter(i=>i.value.trim()).length;
-    $('#mapResult').innerHTML=`<p class="note">${MAP_QS.length}문제 중 ${filled}개를 썼어요. 네이버 지도 창의 경로와 하나씩 비교하며 선생님과 함께 확인해요.</p>`; return;
-  }
-  let okN=0, total=0;
-  MAP_QS.forEach(([k])=>{
-    const inp=$('#mq_'+k), v=inp.value.trim(), key=answerKey[k]; let ok;
-    if(k==='start'||k==='end'){ ok = !!v; }
-    else if(k==='stops'||k==='mins'){ const n=parseInt(v.replace(/\D/g,'')); ok = !isNaN(n) && Math.abs(n-key) <= (k==='mins'?3:0); }
-    else if(k==='transfer'){ ok = (/^(예|네|응|o|yes)/i.test(v)?'예':/^(아니|no|x)/i.test(v)?'아니오':'') === key; }
-    else if(k==='vehicle'){ ok = !!v && (norm(key).includes(norm(v).replace(/번$/,'')) || norm(v).replace(/번$/,'').includes(norm(key).replace(/번$/,''))); }
-    else if(k==='dep'){ const d=v.replace(/\D/g,''), kk=String(key).replace(/\D/g,''); ok = !!d && (d===kk || d===kk.replace(/^0/,'')); }
-    else { ok = !!v && (sameName(v,key) || norm(key).includes(norm(v)) && norm(v).length>=2); }
-    total++; if(ok) okN++;
-    inp.classList.toggle('ok',ok); inp.classList.toggle('bad',!ok);
-    $('#mm_'+k).innerHTML = ok?'⭕':`<span title="정답: ${esc(key)}">❌</span>`;
-  });
-  $('#mapResult').innerHTML=`<p class="feedback ${okN===total?'ok':'bad'}">${total}문제 중 ${okN}개 맞았어요! ${okN===total?'🎉':'❌에 마우스를 올리면 정답이 보여요.'}</p>`;
-}
-$('#goBtn').onclick=()=>{ if(isNaver()) return naverRoute(); $('#mq_start').value=$('#orig').value; $('#mq_end').value=$('#dest').value; gmap? routeJS() : iframeRoute(); };
-$('#swap').onclick=()=>{ const a=$('#orig').value; $('#orig').value=$('#dest').value; $('#dest').value=a; };
-$('#myLoc').onclick=()=>{
-  if(!navigator.geolocation) return toast('위치 기능을 쓸 수 없어요');
-  navigator.geolocation.getCurrentPosition(p=>{ $('#orig').value=p.coords.latitude.toFixed(6)+','+p.coords.longitude.toFixed(6); toast('내 위치를 출발지로 정했어요'); }, ()=>toast('위치를 가져오지 못했어요'));
-};
-$('#mapCheck').onclick=mapCheck;
-$('#mapClear').onclick=()=>{ $$('#mapQs input').forEach(i=>{i.value='';i.className='';}); $$('#mapQs .mark').forEach(m=>m.textContent=''); $('#mapResult').innerHTML=''; };
-$('#mapRead').onclick=async()=>{ await speak(`${$('#orig').value}에서 ${$('#dest').value}까지 가는 길을 네이버 지도에서 찾아보세요.`);
-  for(const [,l] of MAP_QS){ await wait(400); await speak(l.replace(/^(\d+)\./,'$1번,').replace(/\(.*?\)/g,'')); } };
-$('#mzIn').onclick=()=>{ if(gmap) gmap.setZoom(gmap.getZoom()+1); else { iframeZoom=Math.min(20,iframeZoom+1); iframeRoute(); } };
-$('#mzOut').onclick=()=>{ if(gmap) gmap.setZoom(gmap.getZoom()-1); else { iframeZoom=Math.max(5,iframeZoom-1); iframeRoute(); } };
-$('#mzFull').onclick=()=>{ const w=$('#mapWrap'); document.fullscreenElement? document.exitFullscreen() : w.requestFullscreen?.(); };
+$('#gwTitle').oninput=e=>{ gw.title=e.target.value; gwSave(); gwRender(); };
+$('#gwGuideIn').oninput=e=>{ gw.guide=e.target.value; gwSave(); gwRender(); };
+$('#gwQs').addEventListener('change',e=>{ gw.qs[e.target.dataset.k]=e.target.checked; gwSave(); gwRender(); });
+[['#gwDiagram','diagram'],['#gwMemo','memo'],['#gwBreak','brk']].forEach(([s,k])=>{ $(s).onchange=e=>{ gw[k]=e.target.checked; gwSave(); gwRender(); }; });
+$('#gwPrint').onclick=()=>{ gwRender(); window.print(); };
 
 /* ===================== ③ 역 이름 쓰기 ===================== */
 let sheet=null;
@@ -1229,7 +1039,7 @@ $('#dcLine').value='l4';
 $('#mkLine').value='bus'; mkRange(); mkCompose();
 ['#dcPlayBtn','#dcSlow','#dcHint','#dcSubmit','#dcSkip'].forEach(s=>$(s).disabled=true);
 $('#dcAsk').textContent="'문제 만들기'를 누르면 시작해요.";
-initMap();
+gwInit();
 </script>
 </body>
 </html>
