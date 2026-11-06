@@ -439,6 +439,10 @@ body.showKey .script{display:block}
     <div class="field"><label for="kGoogle">구글 지도 JavaScript API 키 <span class="muted">(경로·시간 자동 표시, 정답 자동 채점)</span></label><input id="kGoogle" placeholder="AIza..."></div>
     <div class="field"><label for="kSubway">서울 열린데이터광장 지하철 실시간 도착 인증키</label><input id="kSubway" placeholder="data.seoul.go.kr 에서 발급"></div>
     <div class="field"><label for="kBus">공공데이터포털 서울 버스 도착정보 서비스키</label><input id="kBus" placeholder="data.go.kr 에서 발급 (인코딩 안 된 키)"></div>
+    <h3>🔗 키가 들어간 공유 주소</h3>
+    <p class="muted" style="font-size:.9rem;margin:.2rem 0">이 주소로 들어오면 학생 기기에 구글 지도 키가 자동으로 들어가요. 주소를 받은 사람은 키를 볼 수 있으니, Google Cloud에서 키를 이 사이트(웹사이트 제한)에서만 쓰이게 꼭 막아 두세요.</p>
+    <label class="row" style="gap:.3rem;font-weight:400"><input type="checkbox" id="shareAll" style="min-height:auto">지하철·버스 키도 함께 넣기</label>
+    <div class="row" style="margin-top:.4rem"><input id="shareOut" readonly style="flex:1;min-width:12rem" aria-label="공유 주소"><button type="button" id="shareMake">주소 만들고 복사</button></div>
     <h3>나만의 노선 추가</h3>
     <div class="field"><label for="cName">노선 이름</label><input id="cName" placeholder="예: 우리 학교 가는 버스 (143번)"></div>
     <div class="field"><label for="cType">종류</label><select id="cType"><option value="bus">버스</option><option value="subway">지하철</option></select></div>
@@ -566,7 +570,26 @@ function chime(){
 }
 
 /* ===================== 설정 ===================== */
-let cfg = store.get('cfg', {google:'', subway:'', bus:'', custom:null});
+/* 이 파일에 직접 키를 넣어 두고 싶으면 아래 따옴표 안에 쓰세요 (설정이나 주소의 키가 우선) */
+const EMBED_KEYS = {google:'', subway:'', bus:''};
+const SITE_URL = 'https://cmhsong.github.io/transit-worksheet/';
+let cfg = Object.assign({google:'', subway:'', bus:'', custom:null}, store.get('cfg', {}));
+['google','subway','bus'].forEach(k=>{ if(!cfg[k] && EMBED_KEYS[k]) cfg[k]=EMBED_KEYS[k]; });
+/* 주소로 받은 키: ?gkey=구글키&skey=지하철키&bkey=버스키 */
+(function readUrlKeys(){
+  const qp=new URLSearchParams(location.search), map={gkey:'google',key:'google',skey:'subway',bkey:'bus'}; let got=false;
+  Object.entries(map).forEach(([p,k])=>{ const v=(qp.get(p)||'').trim(); if(v){ cfg[k]=v; got=true; qp.delete(p); } });
+  if(got){ store.set('cfg',cfg);
+    try{ history.replaceState(null,'',location.pathname+(qp.toString()?'?'+qp:'')+location.hash); }catch(e){}
+    setTimeout(()=>toast('주소에 들어 있던 API 키를 적용했어요'),600); }
+})();
+function shareUrl(){
+  const base = location.protocol.startsWith('http') ? location.origin+location.pathname : SITE_URL;
+  const qp=new URLSearchParams();
+  const g=$('#kGoogle').value.trim(), s=$('#kSubway').value.trim(), b=$('#kBus').value.trim();
+  if(g) qp.set('gkey',g); if(s && $('#shareAll').checked) qp.set('skey',s); if(b && $('#shareAll').checked) qp.set('bkey',b);
+  return base + (qp.toString()? '?'+qp : '');
+}
 function loadCustom(){
   LINES = {...BASE_LINES};
   if(cfg.custom && cfg.custom.stops && cfg.custom.stops.length>=2){
@@ -578,6 +601,12 @@ $('#settingsBtn').onclick=()=>{
   $('#kGoogle').value=cfg.google||''; $('#kSubway').value=cfg.subway||''; $('#kBus').value=cfg.bus||'';
   $('#cName').value=cfg.custom?.name||''; $('#cType').value=cfg.custom?.type||'bus'; $('#cStops').value=(cfg.custom?.stops||[]).join(', ');
   $('#settings').showModal();
+};
+$('#shareMake').onclick=async()=>{
+  if(!$('#kGoogle').value.trim()) return toast('먼저 구글 지도 API 키를 넣어 주세요');
+  const u=shareUrl(); $('#shareOut').value=u; $('#shareOut').select();
+  try{ await navigator.clipboard.writeText(u); toast('주소를 복사했어요'); }
+  catch(e){ try{ document.execCommand('copy'); toast('주소를 복사했어요'); }catch(e2){ toast('주소를 직접 복사해 주세요'); } }
 };
 $('#settings').addEventListener('close',()=>{
   if($('#settings').returnValue!=='save') return;
