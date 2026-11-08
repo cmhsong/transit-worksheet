@@ -111,6 +111,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .printOnly{display:none}
 .gwRow{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin:.3rem 0}
 .gwRow input{flex:1;min-width:7rem}
+.gwAuto{flex-basis:100%;font-size:.85rem;padding-left:2rem}
+.gwXfer{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:-.2rem 0 .5rem}
+.gwXfer button{min-width:2.4rem;font-weight:900}
 .gwTrip{border:2px solid var(--line);border-radius:.8rem;padding:.8rem 1rem;margin:.9rem 0;break-inside:avoid}
 .gwHead{font-size:1.2rem;margin-bottom:.6rem;display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:center}
 .gwNo{display:inline-flex;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--pri);color:#fff;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
@@ -120,10 +123,42 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .gwFlow{display:flex;flex-wrap:wrap;align-items:stretch;gap:.35rem;margin-top:.7rem}
 .gwBox{flex:1 1 6.5rem;min-height:4.4rem;border:1.5px solid var(--ink);border-radius:.5rem;padding:.3rem .5rem;display:flex;flex-direction:column;gap:.2rem}
 .gwBox small{color:var(--muted);font-size:.8rem;font-weight:700}
+.gwBox{padding:0 !important;gap:0 !important;overflow:hidden}
+.gwCap{background:var(--soft);border-bottom:1.5px solid var(--ink);padding:.25rem .4rem;font-size:.8rem;font-weight:800;text-align:center;word-break:keep-all;line-height:1.25}
+.gwAns{flex:1;min-height:2.6rem;padding:.3rem .4rem;display:flex;align-items:center;justify-content:center;text-align:center;word-break:keep-all}
+.gwAns[contenteditable]:focus{outline:3px solid var(--pri);outline-offset:-3px}
+@media print{.gwCap{background:#eee;border-bottom-color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .gwBox b{font-size:1.05rem}
 .gwArrow{align-self:center;font-weight:900}
+.gwFlow2{margin-top:.35rem}
+.gwGap{visibility:hidden}
 .gwMemo{border:1.5px dashed var(--line);border-radius:.5rem;min-height:5.5rem;margin-top:.7rem;padding:.3rem .5rem;color:var(--muted);font-size:.85rem}
 .gwBreak .gwTrip+.gwTrip{break-before:page}
+/* 길찾기 학습지: A4 가로, 한 장에 2문제를 나란히 */
+@page gwLand{size:A4 landscape;margin:9mm 10mm}
+@media print{
+  #t-map.active{page:gwLand}
+  .gwTrips{display:grid;grid-template-columns:1fr 1fr;gap:0 6mm;align-items:start}
+  .gwTrips .gwTrip{margin:0 0 4mm}
+  .gwBreak .gwTrips{display:block}
+  .gwBreak .gwTrip+.gwTrip{break-before:page}
+  .gwTrips .gwFlow{gap:.2rem}
+  .gwTrips .gwBox{flex:1 1 3.6rem;min-width:0;padding:.2rem .3rem}
+  .gwTrips .gwBox b{font-size:.9rem;word-break:keep-all}
+  .gwTrips .gwArrow{font-size:.85rem}
+  .gwTrips .gwTable td{height:2.75rem}
+  .gwTrips .gwTable td:first-child{width:52%;font-size:.95rem}
+  .gwTrips .gwBox{min-height:5rem}
+  .gwTrips .gwBox small{font-size:.72rem;word-break:keep-all;line-height:1.25}
+  .gwTrips .gwCap{font-size:.7rem;padding:.15rem .2rem}
+  .gwTrips .gwAns{padding:.2rem}
+}
+.gwNvBar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;background:var(--soft);border-radius:.7rem;padding:.6rem .8rem;margin:.4rem 0 .8rem}
+.gwNvBtn{margin-left:auto;font-size:.95rem}
+.gwTable td[contenteditable]:focus,.gwBox[contenteditable]:focus{outline:3px solid var(--pri);outline-offset:-3px}
+body.split header nav,body.split #t-map>.card.noprint{display:none}
+body.split main{padding:.5rem}
+body.split .topbar h1{font-size:1rem}
 @media print{.gwTrip,.gwBox{border-color:#000}.gwH{margin-top:0}.gwTrip{margin:.6rem 0;padding:.6rem .8rem}.gwTable td{height:2.1rem;padding:.25rem .6rem}.gwTable td:first-child{width:50%}.gwBox{min-height:3.8rem}}
 @media print{ .printOnly{display:block} .wordbank .wchip.used{opacity:1;text-decoration:none} }
 .mkItem{display:flex;gap:.5rem;align-items:center;border-top:1px dashed var(--line);padding:.35rem 0}
@@ -147,6 +182,92 @@ body.showKey .script{display:block}
   .card{border:none;padding:0}
   .printHead{display:flex;justify-content:space-between;border-bottom:2px solid #000;margin-bottom:.8rem;padding-bottom:.4rem;font-weight:700}
   input{border:none;border-bottom:1px solid #000;border-radius:0}
+}
+/* ===== 길찾기 학습지 디자인 ===== */
+.gwLn{display:inline-flex;align-items:center;justify-content:center;height:1.35rem;min-width:1.35rem;padding:0 .4rem;border-radius:999px;background:var(--lc);color:#fff;font-size:.7rem;font-weight:800;line-height:1;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.gwLn.num{padding:0;font-size:.82rem}
+body.contrast .gwLn{outline:1.5px solid #fff}
+.gwLines{display:flex;flex-wrap:wrap;gap:.2rem;align-items:center;margin-top:.2rem}
+.gwEnd.e .gwLines{justify-content:flex-end}
+.gwLines em{font-style:normal;font-size:.72rem;font-weight:700;color:var(--muted);margin-right:.1rem}
+.gwLegend{display:flex;flex-wrap:wrap;gap:.3rem .8rem;align-items:center;font-size:.8rem;border:1px solid var(--line);border-radius:.7rem;padding:.45rem .7rem;margin:0 0 .9rem;background:var(--card)}
+.gwLegend>b{font-size:.8rem;margin-right:.2rem}
+.gwLegItem{display:inline-flex;align-items:center;gap:.3rem;font-weight:600;white-space:nowrap}
+@media print{ .gwLegend{font-size:.66rem;padding:.25rem .5rem;margin-bottom:.45rem;gap:.15rem .55rem} .gwLegend .gwLn{height:1.05rem;min-width:1.05rem;font-size:.58rem} .gwLegend .gwLn.num{font-size:.66rem} .gwLines .gwLn{height:1.1rem;min-width:1.1rem;font-size:.6rem} .gwLines .gwLn.num{font-size:.7rem} }
+#gwOut{--gw-s:#1a7f37;--gw-s-bg:#e7f6ec;--gw-b:#1f6feb;--gw-b-bg:#e8f0fe;--gw-x:#d9640a;--gw-x-bg:#fff1e3;--gw-a:#8241b8;--gw-a-bg:#f3e9fb;--gw-e:#c62828;--gw-e-bg:#fdecec;--gw-q-bg:#f6f8fc}
+body.contrast #gwOut{--gw-s-bg:#000;--gw-b-bg:#000;--gw-x-bg:#000;--gw-a-bg:#000;--gw-e-bg:#000;--gw-q-bg:#111;--gw-s:#7dff8a;--gw-b:#ffe14d;--gw-x:#ffb36b;--gw-a:#e0b3ff;--gw-e:#ff7b7b}
+.gwSheetHead{display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:flex-end;justify-content:space-between;padding:0 0 .9rem;margin-bottom:.9rem;border-bottom:3px solid var(--ink);position:relative}
+.gwSheetHead::after{content:"";position:absolute;left:0;bottom:-3px;width:5.5rem;height:3px;background:var(--pri)}
+.gwSheetTitle{flex:1 1 20rem;min-width:0}
+.gwEyebrow{display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:.04em;color:var(--pri);background:var(--soft);border-radius:999px;padding:.12rem .7rem}
+#gwOut .gwH{font-size:1.75rem;line-height:1.25;margin:.35rem 0 .2rem;letter-spacing:-.01em}
+.gwGuide{margin:0;color:var(--muted);font-size:.95rem}
+.gwWho{display:flex;border:1.5px solid var(--ink);border-radius:.6rem;overflow:hidden;flex:0 0 auto}
+.gwWho>div{display:flex;flex-direction:column;min-width:5.5rem;border-left:1.5px solid var(--ink)}
+.gwWho>div:first-child{border-left:none;min-width:9rem}
+.gwWho span{font-size:.72rem;font-weight:800;color:var(--muted);background:var(--gw-q-bg);padding:.12rem .55rem;border-bottom:1px solid var(--line)}
+.gwWho b{padding:.3rem .55rem;min-height:2rem;font-size:.95rem;white-space:nowrap}
+#gwOut .gwTrip{position:relative;border:1.5px solid var(--line);border-radius:1rem;padding:0 1rem 1rem;margin:1rem 0;background:var(--card);box-shadow:0 1px 0 rgba(20,30,60,.04),0 6px 18px -10px rgba(20,30,60,.25);overflow:hidden}
+#gwOut .gwHead{margin:0 -1rem .3rem;padding:.75rem 1rem;background:linear-gradient(90deg,var(--gw-q-bg),transparent);border-bottom:1px solid var(--line);gap:.6rem .9rem;flex-wrap:nowrap}
+#gwOut .gwNo{width:2.3rem;height:2.3rem;font-size:1.15rem;border-radius:.7rem;background:var(--ink);color:var(--card);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.gwTicket{flex:1;min-width:0;display:flex;align-items:center;gap:.5rem}
+.gwEnd{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.gwEnd small{font-size:.7rem;font-weight:800;letter-spacing:.06em}
+.gwEnd.s small{color:var(--gw-s)} .gwEnd.e small{color:var(--gw-e)}
+.gwEnd b{font-size:1.2rem;word-break:keep-all}
+.gwEnd.e{text-align:right}
+.gwTrack{flex:1;min-width:2rem;height:.9rem;position:relative}
+.gwTrack::before,.gwTrack::after{content:"";position:absolute;top:50%;width:.8rem;height:.8rem;border-radius:50%;transform:translateY(-50%);background:var(--card);border:3px solid}
+.gwTrack::before{left:0;border-color:var(--gw-s)} .gwTrack::after{right:0;border-color:var(--gw-e)}
+.gwTrack i{position:absolute;left:.5rem;right:.5rem;top:50%;border-top:3px dashed var(--muted);transform:translateY(-50%)}
+#gwOut .gwNvBtn{flex:0 0 auto;margin-left:0}
+#gwOut .gwXfer{margin:.5rem 0 0;font-size:.9rem}
+.gwSec{font-size:.8rem;font-weight:800;color:var(--muted);letter-spacing:.03em;margin:.85rem 0 .35rem;display:flex;align-items:center;gap:.5rem}
+.gwSec::after{content:"";flex:1;border-top:1px solid var(--line)}
+#gwOut .gwTable{border-collapse:separate;border-spacing:0;border:1.5px solid var(--ink);border-radius:.7rem;overflow:hidden}
+#gwOut .gwTable td{border:none;border-top:1px solid var(--line);padding:.3rem .7rem;height:2.6rem}
+#gwOut .gwTable tr:first-child td{border-top:none}
+#gwOut .gwTable td.gwQ{background:var(--gw-q-bg);border-right:1.5px solid var(--line);font-weight:700;width:46%}
+.gwQn{display:inline-flex;align-items:center;justify-content:center;width:1.35rem;height:1.35rem;border-radius:50%;border:1.5px solid var(--muted);color:var(--muted);font-size:.72rem;font-weight:800;margin-right:.45rem;vertical-align:.1em}
+#gwOut .gwFlow{gap:.25rem;margin-top:0}
+#gwOut .gwFlow2{margin-top:.4rem}
+#gwOut .gwBox{border:1.5px solid var(--kc,var(--ink));border-radius:.65rem;min-height:4.6rem;background:var(--card)}
+#gwOut .gwCap{background:var(--kb,var(--soft));color:var(--kc,var(--ink));border-bottom:1.5px solid var(--kc,var(--ink));font-size:.76rem;padding:.28rem .35rem}
+#gwOut .gwAns b{font-size:1rem;overflow-wrap:anywhere;word-break:keep-all}
+.k-s{--kc:var(--gw-s);--kb:var(--gw-s-bg)} .k-b{--kc:var(--gw-b);--kb:var(--gw-b-bg)} .k-x{--kc:var(--gw-x);--kb:var(--gw-x-bg)} .k-a{--kc:var(--gw-a);--kb:var(--gw-a-bg)} .k-e{--kc:var(--gw-e);--kb:var(--gw-e-bg)}
+#gwOut .gwArrow{color:var(--muted);font-size:1.5rem;font-weight:400;line-height:1;padding:0 .05rem}
+#gwOut .gwMemo{border:1.5px solid var(--line);border-radius:.6rem;min-height:5.4rem;margin:0;background:repeating-linear-gradient(transparent 0 1.75rem,var(--line) 1.75rem calc(1.75rem + 1px));background-position:0 .3rem}
+@media (max-width:640px){ #gwOut .gwHead{flex-wrap:wrap} .gwWho{width:100%} .gwWho>div{flex:1;min-width:0} }
+@media print{
+  #gwOut{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .gwSheetHead{padding-bottom:.5rem;margin-bottom:.6rem}
+  #gwOut .gwH{font-size:1.35rem;margin:.2rem 0 .1rem}
+  .gwGuide{font-size:.8rem}
+  .gwWho b{min-height:1.6rem}
+  #gwOut .gwTrip{box-shadow:none;border-color:#999;padding:0 .7rem .7rem;margin:0 0 4mm}
+  #gwOut .gwHead{margin:0 -.7rem .2rem;padding:.45rem .7rem}
+  #gwOut .gwNo{width:1.9rem;height:1.9rem;font-size:1rem;background:#000;color:#fff}
+  .gwEnd b{font-size:1rem}
+  .gwSec{margin:.5rem 0 .25rem;font-size:.72rem}
+  #gwOut .gwTable{border-color:#000}
+  #gwOut .gwTable td{height:2.35rem;padding:.2rem .5rem}
+  #gwOut .gwBox{min-height:4.2rem}
+  #gwOut .gwArrow{font-size:1rem}
+  .gwEyebrow{display:none}
+  #gwOut .gwH{font-size:1.2rem;margin:0}
+  .gwSheetHead{padding-bottom:.35rem;margin-bottom:.5rem}
+  .gwWho b{min-height:1.4rem;padding:.15rem .5rem;font-size:.85rem}
+  .gwWho span{font-size:.65rem;padding:.05rem .5rem}
+  #gwOut .gwHead{padding:.3rem .7rem}
+  #gwOut .gwTable td{height:1.85rem;padding:.12rem .45rem;font-size:.82rem;line-height:1.25}
+  #gwOut .gwTable td.gwQ{width:60%}
+  .gwQn{width:1.15rem;height:1.15rem;font-size:.62rem;margin-right:.3rem}
+  .gwSec{margin:.35rem 0 .2rem}
+  #gwOut .gwBox{min-height:3.3rem}
+  #gwOut .gwCap{font-size:.66rem;padding:.12rem .2rem}
+  #gwOut .gwAns{min-height:1.9rem}
+  #gwOut .gwAns b{font-size:.82rem;overflow-wrap:anywhere;word-break:keep-all}
+  #gwOut .gwMemo{min-height:3rem}
 }
 </style>
 </head>
@@ -182,7 +303,7 @@ body.showKey .script{display:block}
     <p class="muted" style="margin-top:0">출발·도착을 정하고 물어볼 문항을 고른 뒤 인쇄해요. 학생은 지도 앱이나 노선도를 보고 빈칸을 채워요.</p>
     <div class="row"><label for="gwTitle">제목</label><input id="gwTitle" style="flex:1;min-width:14rem"></div>
     <div class="row" style="margin-top:.4rem"><label for="gwGuideIn">안내 글</label><input id="gwGuideIn" style="flex:1;min-width:14rem"></div>
-    <h3>길찾기 문제</h3>
+    <div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin-bottom:.3rem">길찾기 문제</h3><button id="gwRouteBtn" aria-pressed="false"></button></div>
     <div id="gwTrips"></div>
     <div class="row" style="margin-top:.4rem">
       <button id="gwAdd">＋ 문제 추가</button>
@@ -193,8 +314,10 @@ body.showKey .script{display:block}
     <h3>모양</h3>
     <div class="row" style="gap:.4rem 1.2rem">
       <label class="row" style="gap:.3rem"><input type="checkbox" id="gwDiagram" style="min-height:auto">경로 그림 칸</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwTwoRow" style="min-height:auto">환승이 2번 이상이면 경로 그림을 두 줄로</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwLegend" style="min-height:auto">지하철 노선표(번호·색) 넣기</label>
       <label class="row" style="gap:.3rem"><input type="checkbox" id="gwMemo" style="min-height:auto">메모 칸</label>
-      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwBreak" style="min-height:auto">문제마다 새 쪽에 인쇄</label>
+      <label class="row" style="gap:.3rem"><input type="checkbox" id="gwBreak" style="min-height:auto">문제마다 새 쪽에 인쇄 (안 고르면 A4 가로 한 장에 2문제)</label>
     </div>
     <div class="row" style="margin-top:.9rem"><button class="pri big" id="gwPrint">🖨 학습지 인쇄</button></div>
   </div>
@@ -219,15 +342,19 @@ body.showKey .script{display:block}
       <label class="row" style="gap:.3rem"><input type="checkbox" id="shInstant" checked style="min-height:auto">옮기자마자 정답 확인</label>
       <button class="pri" id="shMake">학습지 만들기</button>
     </div>
+    <div class="row" style="margin-top:.5rem;gap:.4rem 1.4rem">
+      <label class="row" style="gap:.4rem">🔊 방송 빠르기 <input type="range" id="shRate" min="0.4" max="1.6" step="0.1" style="min-height:auto;width:9rem"><output id="oShRate"></output></label>
+      <label class="row" style="gap:.4rem">✋ 끄는 빠르기 <input type="range" id="shDrag" min="0.3" max="2" step="0.1" style="min-height:auto;width:9rem"><output id="oShDrag"></output></label>
+    </div>
   </div>
   <div class="card">
     <h2 id="shTitle"></h2>
     <div id="shBankBox"></div>
     <div class="route" id="shRoute"></div>
     <div class="row noprint">
-      <button class="pri" id="shCheck">정답 확인</button>
-      <button id="shShow">정답 보기</button>
-      <button id="shListen">🔊 역 이름 차례로 듣기</button>
+      <button class="pri" id="shListen">🔊 역 이름 차례대로 듣기</button>
+      <button class="pri" id="shCheck">✔ 정답 확인</button>
+      <button id="shReset">↺ 처음부터 다시</button>
     </div>
     <div id="shResult"></div>
   </div>
@@ -486,7 +613,7 @@ applyScale();
 
 /* 이름 / 인쇄 */
 $('#studentName').value = store.get('student','');
-function syncPrintHead(){ $$('.pName').forEach(e=>e.textContent='이름: '+($('#studentName').value||'          ')); $$('.pDate').forEach(e=>e.textContent=today()); }
+function syncPrintHead(){ $$('.gwWhoName').forEach(e=>e.textContent=$('#studentName').value||''); $$('.pName').forEach(e=>e.textContent='이름: '+($('#studentName').value||'          ')); $$('.pDate').forEach(e=>e.textContent=today()); }
 $('#studentName').oninput=()=>{ store.set('student',$('#studentName').value); syncPrintHead(); };
 $('#printBtn').onclick=()=>{ syncPrintHead(); window.print(); };
 syncPrintHead();
@@ -596,6 +723,8 @@ function fillLineSelects(){
 function fillStopSelect(sel, line, idx){ sel.innerHTML=LINES[line].stops.map((s,i)=>`<option value="${i}">${esc(s)}</option>`).join(''); sel.value=String(Math.min(idx, LINES[line].stops.length-1)); }
 
 /* ===================== ① 길찾기 학습지 ===================== */
+const SPLIT = new URLSearchParams(location.search).get('split')==='1';
+if(SPLIT) document.body.classList.add('split');
 const GW_QS = [
   ['vehicle','처음 타는 교통수단 (버스 번호 · 지하철 호선)','',true],
   ['dir','어느 방면(방향)으로 타나요?','방면',false],
@@ -609,7 +738,9 @@ const GW_QS = [
   ['fare','요금은 얼마인가요?','원',false],
   ['time','몇 시에 출발하면 몇 시에 도착하나요?','time',false]
 ];
-const GW_SAMPLE = [['혜화역','서울역'],['혜화역','광화문'],['혜화역','잠실 롯데월드'],['혜화역','국립중앙박물관']];
+const GW_SAMPLE = [['혜화역','서울역',0],['혜화역','광화문',1],['혜화역','잠실 롯데월드',1],['혜화역','국립중앙박물관',0]];
+const GW_XMAX = 4;   // 환승 칸은 최대 4번까지
+const xferN = t => Math.max(0, Math.min(GW_XMAX, t[2]==null? 1 : +t[2]||0));
 let gw = Object.assign({title:'대중교통 길찾기 학습지', guide:'지도 앱(네이버 지도, 카카오맵 등)에서 대중교통 길찾기를 하고 빈칸을 채워요.',
   trips:GW_SAMPLE.slice(0,2).map(t=>t.slice()), qs:Object.fromEntries(GW_QS.map(q=>[q[0],q[3]])), diagram:true, memo:false, brk:false}, store.get('gw',{}));
 function gwSave(){ store.set('gw',gw); }
@@ -618,46 +749,238 @@ function gwTripsUI(){
     <input data-f="0" value="${esc(t[0])}" placeholder="출발 (예: 혜화역)" aria-label="${i+1}번 출발">
     <span class="gwArrow">→</span>
     <input data-f="1" value="${esc(t[1])}" placeholder="도착 (예: 서울역)" aria-label="${i+1}번 도착">
-    <button data-act="swap" title="출발·도착 바꾸기">⇄</button><button data-act="del" title="이 문제 지우기">✕</button></div>`).join('')
+    <label class="row" style="gap:.25rem">🔁 환승 <select data-f="2" aria-label="${i+1}번 환승 횟수">${[...Array(GW_XMAX+1).keys()].map(n=>`<option value="${n}"${n===xferN(t)?' selected':''}>${n}</option>`).join('')}</select>번</label>
+    <button data-act="swap" title="출발·도착 바꾸기">⇄</button><button data-act="del" title="이 문제 지우기">✕</button>
+    <div class="gwAuto muted">${gwAutoNote(t)}</div></div>`).join('')
     || '<p class="muted">＋ 문제 추가를 눌러요.</p>';
 }
-$('#gwTrips').addEventListener('input',e=>{ const r=e.target.closest('.gwRow'); if(!r||!e.target.dataset.f) return; gw.trips[+r.dataset.i][+e.target.dataset.f]=e.target.value; gwSave(); gwRender(); });
-$('#gwTrips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const i=+b.closest('.gwRow').dataset.i;
-  if(b.dataset.act==='del') gw.trips.splice(i,1); else gw.trips[i]=[gw.trips[i][1],gw.trips[i][0]];
+$('#gwTrips').addEventListener('input',e=>{ const r=e.target.closest('.gwRow'); if(!r||!e.target.dataset.f) return; const i=+r.dataset.i, f=+e.target.dataset.f; gw.trips[i][f]= f===2? +e.target.value : e.target.value;
+  if(f===2 && gw.trips[i][3]) gw.trips[i][3].manual=true;
+  gwSave(); gwRender(); if(f<2) gwAutoLater(i); });
+$('#gwTrips').addEventListener('click',e=>{ const b=e.target.closest('button[data-act]'); if(!b) return; const i=+b.closest('.gwRow').dataset.i;
+  if(b.dataset.act==='del') gw.trips.splice(i,1); else gw.trips[i]=[gw.trips[i][1],gw.trips[i][0],xferN(gw.trips[i]),gw.trips[i][3]];
   gwSave(); gwTripsUI(); gwRender(); });
-$('#gwAdd').onclick=()=>{ gw.trips.push(['','']); gwSave(); gwTripsUI(); gwRender(); const ins=$$('#gwTrips input'); ins[ins.length-2]?.focus(); };
-$('#gwSample').onclick=()=>{ gw.trips=GW_SAMPLE.map(t=>t.slice()); gwSave(); gwTripsUI(); gwRender(); };
+$('#gwAdd').onclick=()=>{ gw.trips.push(['','',1]); gwSave(); gwTripsUI(); gwRender(); const ins=$$('#gwTrips input'); ins[ins.length-2]?.focus(); };
+$('#gwSample').onclick=()=>{ gw.trips=GW_SAMPLE.map(t=>t.slice()); gwSave(); gwTripsUI(); gwRender(); gwAutoAll(); };
 $('#gwQs').innerHTML = GW_QS.map(([k,l])=>`<label class="row" style="gap:.3rem"><input type="checkbox" data-k="${k}" style="min-height:auto">${esc(l)}</label>`).join('');
 function gwAnswer(u){
   if(u==='yn') return '<b>예 &nbsp;·&nbsp; 아니오</b> <span class="muted" style="font-size:.85rem">(동그라미)</span>';
   if(u==='time') return '<b>&emsp;&ensp;시 &emsp;&ensp;분 출발 → &emsp;&ensp;시 &emsp;&ensp;분 도착</b>';
   return u? `<span class="unit">${u}</span>` : '';
 }
+/* ---------- 지하철 노선 번호 배지 ---------- */
+const lineTag = s => /^\d호선$/.test(s)? s[0] : s.replace(/(선|라인|철도)$/,'');
+function lineBadge(short){
+  const L=Object.values(LINES).find(l=>l.type==='subway'&&l.short===short); if(!L) return '';
+  const num=/^\d호선$/.test(short);
+  return `<span class="gwLn${num?' num':''}" style="--lc:${L.color}" title="${esc(short)}">${esc(lineTag(short))}</span>`;
+}
+/* 그 역을 지나는 노선 (같은 이름 중복 없이, 노선 순서대로) */
+function linesAt(st){ return [...new Set(Object.values(LINES).filter(l=>l.type==='subway'&&l.stops.some(s=>baseName(s)===st)).map(l=>l.short))]; }
+function gwStLines(t,w){
+  const r=t[3], st=(r&&!r.fail&&!r.busy? (w?r.to:r.from) : null) || matchStation(t[w]||'');
+  if(!st) return '';
+  const ls=linesAt(st); if(!ls.length) return '';
+  const typed=(t[w]||'').replace(/\s/g,'').replace(/역$/,''), same=typed===st.replace(/\s/g,'').replace(/역$/,'');
+  return `<span class="gwLines">${same?'':`<em>${esc(st.replace(/역$/,''))}역</em>`}${ls.map(lineBadge).join('')}</span>`;
+}
+function gwLegend(){
+  const all=[...new Set(Object.values(LINES).filter(l=>l.type==='subway').map(l=>l.short))];
+  return `<div class="gwLegend"><b>🚇 지하철 노선표</b>${all.map(s=>`<span class="gwLegItem">${lineBadge(s)}${esc(s)}</span>`).join('')}</div>`;
+}
 function gwRender(){
-  const qs=GW_QS.filter(q=>gw.qs[q[0]]), trips=gw.trips.filter(t=>t[0].trim()||t[1].trim());
-  const box=(cap,val)=>`<div class="gwBox"><small>${cap}</small>${val?`<b>${esc(val)}</b>`:''}</div>`, ar='<span class="gwArrow">→</span>';
+  /* 다시 그려도 학생이 화면에 쓴 답은 남도록 모아 두었다가 되돌림 */
+  const typed={}; $$('#gwOut [data-a]').forEach(el=>{ if(el.dataset.d!==el.innerHTML) typed[el.dataset.a]=el.innerHTML; });
+  const qs=GW_QS.filter(q=>gw.qs[q[0]]), trips=gw.trips.map((t,oi)=>({t,oi})).filter(({t})=>t[0].trim()||t[1].trim());
+  const box=(cap,val,a,kind)=>`<div class="gwBox k-${kind}"><div class="gwCap">${cap}</div>${val? `<div class="gwAns"><b>${esc(val)}</b></div>` : `<div class="gwAns" contenteditable="true" data-a="${a}"></div>`}</div>`, ar='<span class="gwArrow" aria-hidden="true">›</span>';
+  const rows=(t,oi)=>qs.flatMap(([k,l,u])=>{
+    if(k!=='xfer') return [[k,l,u]];
+    const n=xferN(t); return n===1? [[k,l,u]] : [...Array(n).keys()].map(j=>[k+j, `${j+1}번째 갈아타는 곳과 갈아탈 교통수단`, u]);
+  }).map(([k,l,u],j)=>`<tr><td class="gwQ"><span class="gwQn">${j+1}</span>${esc(l)}</td><td class="gwA" contenteditable="true" data-a="${oi}-${k}">${gwAnswer(u)}</td></tr>`).join('');
+  const flow=(t,oi)=>{ const n=xferN(t);
+    const bx=[box('🟢 출발',t[0],'','s'), box('🚇🚌 타는 곳','',oi+'-fb','b'),
+      ...[...Array(n).keys()].map(j=>box(n>1?`🔁 ${j+1}번째 갈아타는 곳`:'🔁 갈아타는 곳','',oi+'-fx'+j,'x')),
+      box('🔔 내리는 곳','',oi+'-fa','a'), box('🚩 도착',t[1],'','e')];
+    /* 환승이 많으면 칸이 너무 좁아지므로 두 줄로 나눔(두 줄 칸 수를 맞춰 칸 너비를 같게) */
+    const two = gw.twoRow!==false && n>=2;
+    if(!two) return '<div class="gwFlow">'+bx.join(ar)+'</div>';
+    const k=Math.ceil(bx.length/2), r2=bx.slice(k);
+    const pad='<span class="gwArrow gwGap" aria-hidden="true">›</span><div class="gwBox gwGap" aria-hidden="true"></div>'.repeat(k-r2.length);
+    return '<div class="gwFlow">'+bx.slice(0,k).join(ar)+'<span class="gwArrow">↵</span></div>'
+         + '<div class="gwFlow gwFlow2"><span class="gwArrow">↪</span>'+r2.join(ar)+pad+'</div>'; };
   $('#gwOut').classList.toggle('gwBreak',!!gw.brk);
-  $('#gwOut').innerHTML = `<div class="printHead"><span class="pDate"></span><span class="pName"></span></div>
-    <h2 class="gwH">${esc(gw.title)}</h2>${gw.guide?`<p class="muted" style="margin-top:0">${esc(gw.guide)}</p>`:''}` +
-    (trips.length? trips.map((t,i)=>`<div class="gwTrip">
-      <div class="gwHead"><span class="gwNo">${i+1}</span><span>🟢 출발 <b>${esc(t[0])}</b></span><span class="gwArrow">→</span><span>🚩 도착 <b>${esc(t[1])}</b></span></div>
-      ${qs.length?`<table class="gwTable">${qs.map(([k,l,u])=>`<tr><td>${esc(l)}</td><td>${gwAnswer(u)}</td></tr>`).join('')}</table>`:''}
-      ${gw.diagram?`<div class="gwFlow">${box('출발',t[0])}${ar}${box('🚇🚌 타는 곳')}${ar}${box('🔁 갈아타는 곳')}${ar}${box('🔔 내리는 곳')}${ar}${box('도착',t[1])}</div>`:''}
-      ${gw.memo?'<div class="gwMemo">메모</div>':''}</div>`).join('')
+  $('#gwOut').innerHTML = `<div class="gwSheetHead">
+      <div class="gwSheetTitle"><span class="gwEyebrow">🚇 대중교통 길찾기 · 생활 속 이동 연습</span><h2 class="gwH">${esc(gw.title)}</h2>${gw.guide?`<p class="gwGuide">${esc(gw.guide)}</p>`:''}</div>
+      <div class="gwWho"><div><span>이름</span><b class="gwWhoName"></b></div><div><span>날짜</span><b class="pDate"></b></div><div><span>문제</span><b>${trips.length}개</b></div></div>
+    </div>${gw.legend!==false? gwLegend() : ''}
+    <div class="gwNvBar noprint">${SPLIT
+      ? '👉 문제의 <b>🗺 네이버 길찾기</b>를 누르면 <b>오른쪽 지도 창</b>에 길이 나와요. 지도 창은 그 자리에 그대로 있어요. 빈칸을 눌러 답을 써요.'
+      : '<button class="pri" id="gwSplit">🪟 학습지 + 네이버 지도 나란히 보기</button><span class="muted" style="font-size:.9rem">왼쪽에 학습지, 오른쪽에 네이버 지도 창이 고정돼요. 창이 안 열리면 팝업을 허용해요.</span>'}</div>` +
+    (trips.length? '<div class="gwTrips">'+trips.map(({t,oi},i)=>`<div class="gwTrip">
+      <div class="gwHead"><span class="gwNo">${i+1}</span>
+        <div class="gwTicket"><div class="gwEnd s"><small>출발</small><b>${esc(t[0])}</b>${gwStLines(t,0)}</div><div class="gwTrack" aria-hidden="true"><i></i></div><div class="gwEnd e"><small>도착</small><b>${esc(t[1])}</b>${gwStLines(t,1)}</div></div>
+        <button class="gwNvBtn noprint" data-nv="${i}">🗺 네이버 길찾기</button></div>
+      <div class="gwXfer noprint">🔁 갈아타는 횟수 <button data-x="${oi}" data-d="-1" aria-label="환승 칸 줄이기"${xferN(t)<=0?' disabled':''}>－</button><b>${xferN(t)}번</b><button data-x="${oi}" data-d="1" aria-label="환승 칸 늘리기"${xferN(t)>=GW_XMAX?' disabled':''}>＋</button><span class="muted" style="font-size:.85rem">지도에서 찾은 만큼 칸을 늘려요</span></div>
+      ${qs.length?`<div class="gwSec">✏️ 물음에 답해요</div><table class="gwTable">${rows(t,oi)}</table>`:''}
+      ${gw.diagram? '<div class="gwSec">🗺 가는 길을 순서대로 써요</div>'+flow(t,oi) :''}
+      ${gw.memo?'<div class="gwSec">📝 메모</div><div class="gwMemo"></div>':''}</div>`).join('')+'</div>'
     : '<p class="muted">위에서 길찾기 문제를 넣어요.</p>');
+  $$('#gwOut [data-a]').forEach(el=>{ el.dataset.d=el.innerHTML; if(typed[el.dataset.a]!=null) el.innerHTML=typed[el.dataset.a]; });
   syncPrintHead();
 }
 function gwInit(){
   $('#gwTitle').value=gw.title; $('#gwGuideIn').value=gw.guide;
   $$('#gwQs input').forEach(c=>c.checked=!!gw.qs[c.dataset.k]);
-  $('#gwDiagram').checked=!!gw.diagram; $('#gwMemo').checked=!!gw.memo; $('#gwBreak').checked=!!gw.brk;
+  $('#gwDiagram').checked=!!gw.diagram; $('#gwTwoRow').checked=gw.twoRow!==false; $('#gwLegend').checked=gw.legend!==false; $('#gwMemo').checked=!!gw.memo; $('#gwBreak').checked=!!gw.brk;
   gwTripsUI(); gwRender();
 }
 $('#gwTitle').oninput=e=>{ gw.title=e.target.value; gwSave(); gwRender(); };
 $('#gwGuideIn').oninput=e=>{ gw.guide=e.target.value; gwSave(); gwRender(); };
 $('#gwQs').addEventListener('change',e=>{ gw.qs[e.target.dataset.k]=e.target.checked; gwSave(); gwRender(); });
-[['#gwDiagram','diagram'],['#gwMemo','memo'],['#gwBreak','brk']].forEach(([s,k])=>{ $(s).onchange=e=>{ gw[k]=e.target.checked; gwSave(); gwRender(); }; });
+[['#gwDiagram','diagram'],['#gwTwoRow','twoRow'],['#gwLegend','legend'],['#gwMemo','memo'],['#gwBreak','brk']].forEach(([s,k])=>{ $(s).onchange=e=>{ gw[k]=e.target.checked; gwSave(); gwRender(); }; });
 $('#gwPrint').onclick=()=>{ gwRender(); window.print(); };
+
+/* ---------- 네이버 길찾기: 한 개의 지도 창을 오른쪽에 고정해서 계속 다시 씀 ---------- */
+const toMerc = (lat,lng) => [lng*20037508.34/180, Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180)*20037508.34/180];
+const geoCache = store.get('geo',{});
+async function geocode(q){
+  q=q.trim(); if(!q) return null;
+  if(geoCache[q]) return geoCache[q];
+  let r=null;
+  try{ const j=await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))).json();
+    if(j[0]) r={lat:+j[0].lat,lng:+j[0].lon,name:q}; }catch(e){}
+  if(r){ geoCache[q]=r; store.set('geo',geoCache); }
+  return r;
+}
+const nvPart = p => { const [x,y]=toMerc(p.lat,p.lng); return `${x.toFixed(7)},${y.toFixed(7)},${encodeURIComponent(p.name)},,`; };
+const nvSearchUrl = q => `https://map.naver.com/p/search/${encodeURIComponent(q.trim())}`;
+const scr = () => ({L:screen.availLeft||0, T:screen.availTop||0, W:screen.availWidth||1280, H:screen.availHeight||800});
+/* 지도 창이 놓일 자리: 나란히 보기면 학습지 창 바로 오른쪽 전부, 아니면 화면 오른쪽 55% */
+function nvRect(){
+  const {L,T,W,H}=scr();
+  let left, w;
+  if(SPLIT){ left=Math.min(L+W-400, window.screenX+window.outerWidth); w=L+W-left; }
+  else { w=Math.round(W*0.55); left=L+W-w; }
+  return {left,top:T,w,h:H};
+}
+let nvWin=null;
+function nvOpenWindow(){
+  const r=nvRect();
+  if(nvWin && !nvWin.closed){   // 이미 열린 창은 새로 만들지 않고 제자리·제크기로 되돌림
+    try{ nvWin.moveTo(r.left,r.top); nvWin.resizeTo(r.w,r.h); }catch(e){}
+    return nvWin;
+  }
+  nvWin=window.open('about:blank','naverMap',`popup=yes,width=${r.w},height=${r.h},left=${r.left},top=${r.top}`);
+  return nvWin;
+}
+function nvGo(win,url){
+  if(win && !win.closed){ win.location.href=url; win.focus(); }
+  else toast('지도 창이 막혔어요. 주소창 오른쪽의 팝업 차단 표시를 눌러 허용해 주세요');
+}
+async function gwNaver(i){
+  const t=gw.trips.filter(t=>t[0].trim()||t[1].trim())[i]; if(!t) return;
+  const [o,d]=[t[0].trim(),t[1].trim()];
+  if(!o||!d) return toast('출발과 도착을 모두 써 주세요');
+  const win=nvOpenWindow();   // 팝업 차단을 피하려고 클릭하자마자 창부터 연다
+  if(!win) return nvGo(null);
+  toast('네이버 지도에서 길을 찾는 중…');
+  const [a,b]=await Promise.all([geocode(o),geocode(d)]);
+  if(!a||!b){ toast(`'${!a?o:d}' 위치를 못 찾아 검색 화면을 열었어요`); return nvGo(win, nvSearchUrl(!a?o:d)); }
+  nvGo(win, `https://map.naver.com/p/directions/${nvPart(a)}/${nvPart(b)}/-/transit`);
+}
+$('#gwOut').addEventListener('click',e=>{
+  const b=e.target.closest('[data-nv]'); if(b) return gwNaver(+b.dataset.nv);
+  const x=e.target.closest('[data-x]');
+  if(x){ const t=gw.trips[+x.dataset.x]; t[2]=Math.max(0,Math.min(GW_XMAX,xferN(t)+(+x.dataset.d))); if(t[3]) t[3].manual=true; gwSave(); gwTripsUI(); gwRender(); return; }
+  if(e.target.closest('#gwSplit')){
+    const {L,T,W,H}=scr(), w=Math.max(460, Math.round(W*0.42));
+    const win=window.open(location.pathname+'?split=1','gilSheet',`popup=yes,width=${w},height=${H},left=${L},top=${T}`);
+    if(!win) return toast('팝업이 막혔어요. 주소창 오른쪽의 팝업 차단 표시를 눌러 허용해 주세요');
+    win.focus();
+  }
+});
+/* 학습지 창 크기·위치가 바뀌면 지도 창도 옆에 다시 붙임 */
+if(SPLIT){
+  let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(nvWin&&!nvWin.closed) nvOpenWindow(); },400); });
+  window.addEventListener('beforeunload',()=>{ try{ nvWin&&!nvWin.closed&&nvWin.close(); }catch(e){} });
+}
+
+/* ---------- 지하철 환승 횟수 자동 계산 ----------
+   출발·도착 글자에서 역을 찾고(역 이름이 아니면 지도에서 가장 가까운 역),
+   노선도 안에서 '한 정거장 2분, 갈아타기 10분'으로 가장 빠른 길을 골라 갈아타는 횟수를 셈 */
+const nrm = s => baseName(s).replace(/\s/g,'');
+const SUB_LINES = () => Object.entries(LINES).filter(([,l])=>l.type==='subway');
+function stationIndex(){
+  const m=new Map(); SUB_LINES().forEach(([,l])=>l.stops.forEach(s=>m.set(nrm(s), baseName(s)))); return m;
+}
+function matchStation(text){
+  const m=stationIndex(), q=text.replace(/\s/g,'');
+  if(!q) return null;
+  if(m.has(q)) return m.get(q);
+  if(q.endsWith('역') && m.has(q.slice(0,-1))) return m.get(q.slice(0,-1));
+  let best=null; for(const [k,v] of m) if(k.length>=2 && q.startsWith(k) && (!best||k.length>best[0].length)) best=[k,v];   // '잠실 롯데월드' → 잠실
+  return best? best[1] : null;
+}
+const nearCache = store.get('nearSt',{});
+async function nearestStation(text){
+  const key=text.trim(); if(nearCache[key]) return nearCache[key];
+  const p=await geocode(key); if(!p) return null;
+  try{
+    const qy=`[out:json][timeout:15];(node(around:1500,${p.lat},${p.lng})[railway=station];node(around:1500,${p.lat},${p.lng})[station=subway];);out;`;
+    const j=await (await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(qy))).json();
+    const m=stationIndex(), d2=e=>(e.lat-p.lat)**2+((e.lon-p.lng)*Math.cos(p.lat*Math.PI/180))**2;
+    const hit=j.elements.map(e=>({e,n:[e.tags?.['name:ko'],e.tags?.name].filter(Boolean).map(x=>x.replace(/\(.*?\)/g,'').replace(/역$/,'').replace(/\s/g,'')).find(x=>m.has(x))}))
+      .filter(x=>x.n).sort((a,b)=>d2(a.e)-d2(b.e))[0];
+    if(hit){ nearCache[key]=m.get(hit.n); store.set('nearSt',nearCache); return nearCache[key]; }
+  }catch(e){}
+  return null;
+}
+function subwayRoute(a,b){
+  const lines=SUB_LINES(), nodes=[], byName=new Map();
+  lines.forEach(([k,l])=>l.stops.forEach((s,i)=>{ const id=nodes.length; nodes.push({k,l,i,n:baseName(s)}); (byName.get(baseName(s))||byName.set(baseName(s),[]).get(baseName(s))).push(id); }));
+  const idOf=new Map(nodes.map((x,id)=>[x.k+'|'+x.i,id]));
+  const adj=nodes.map(()=>[]);
+  nodes.forEach((x,id)=>{ const L=x.l.stops.length, loop=/순환/.test(x.l.name);
+    [x.i-1,x.i+1].forEach(j=>{ if(loop) j=(j+L)%L; if(j>=0&&j<L) adj[id].push([idOf.get(x.k+'|'+j),2,0]); });
+    byName.get(x.n).forEach(o=>{ if(o!==id){ const same=nodes[o].l.short===x.l.short; adj[id].push([o, same?1:10, same?0:1]); } }); });
+  const dist=nodes.map(()=>Infinity), prev=nodes.map(()=>-1), done=nodes.map(()=>false);
+  (byName.get(a)||[]).forEach(id=>dist[id]=0);
+  const goal=new Set(byName.get(b)||[]); if(!goal.size||dist.every(d=>d===Infinity)) return null;
+  for(;;){ let u=-1; for(let i=0;i<nodes.length;i++) if(!done[i]&&dist[i]<Infinity&&(u<0||dist[i]<dist[u])) u=i;
+    if(u<0) return null; if(goal.has(u)) break; done[u]=true;
+    adj[u].forEach(([v,w])=>{ if(dist[u]+w<dist[v]){ dist[v]=dist[u]+w; prev[v]=u; } }); }
+  let u=[...goal].reduce((m,g)=>dist[g]<dist[m]?g:m), path=[]; while(u>=0){ path.unshift(u); u=prev[u]; }
+  const segs=[nodes[path[0]].l.short], at=[];
+  for(let i=1;i<path.length;i++){ const p=nodes[path[i-1]], c=nodes[path[i]]; if(p.n===c.n && p.l.short!==c.l.short){ at.push(c.n); segs.push(c.l.short); } }
+  return {n:at.length, segs, at, from:a, to:b};
+}
+function gwAutoNote(t){
+  const r=t[3]; if(!r) return '';
+  if(r.busy) return '⏳ 지하철 환승 횟수를 찾는 중…';
+  if(r.fail) return '⚠ '+esc(r.fail)+' — 환승 횟수를 직접 골라요';
+  if(!gw.showRoute) return `🚇 자동으로 찾은 환승 <b>${r.n}번</b>${r.manual?' (직접 바꿈)':''} · 환승 과정은 숨겨져 있어요`;
+  const route=r.segs.map((s,i)=>i? `<b>${esc(r.at[i-1])}</b>에서 ${esc(s)}` : esc(s)).join(' → ');
+  return `🚇 자동: ${esc(r.from)}역 → ${esc(r.to)}역, ${route} · 환승 <b>${r.n}번</b>${r.manual?' (직접 바꿈)':''}`;
+}
+async function gwAuto(i){
+  const t=gw.trips[i]; if(!t) return; const o=t[0].trim(), d=t[1].trim();
+  if(!o||!d){ t[3]=null; gwSave(); gwTripsUI(); return; }
+  const want=o+'→'+d; t[3]={busy:true,q:want}; gwTripsUI();
+  let a=matchStation(o), b=matchStation(d);
+  if(!a) a=await nearestStation(o); if(!b) b=await nearestStation(d);
+  if(gw.trips[i]!==t || t[0].trim()+'→'+t[1].trim()!==want) return;   // 그 사이 글자가 바뀜
+  const r=a&&b? subwayRoute(a,b) : null;
+  if(!r) t[3]={q:want, fail: !a? `'${o}' 근처 지하철역을 못 찾았어요` : !b? `'${d}' 근처 지하철역을 못 찾았어요` : '지하철로 가는 길을 못 찾았어요'};
+  else { t[3]={...r,q:want}; t[2]=Math.min(GW_XMAX,r.n); }
+  gwSave(); gwTripsUI(); gwRender();
+}
+const gwAutoT={};
+function gwRouteBtnUI(){ const b=$('#gwRouteBtn'); b.textContent=gw.showRoute?'🙈 환승 과정 숨기기':'👁 환승 과정 보기'; b.setAttribute('aria-pressed',String(!!gw.showRoute)); }
+$('#gwRouteBtn').onclick=()=>{ gw.showRoute=!gw.showRoute; gwSave(); gwRouteBtnUI(); gwTripsUI(); };
+gwRouteBtnUI();
+function gwAutoLater(i){ clearTimeout(gwAutoT[i]); gwAutoT[i]=setTimeout(()=>gwAuto(i),700); }
+async function gwAutoAll(){ for(let i=0;i<gw.trips.length;i++){ const t=gw.trips[i]; if(!t[3]||t[3].busy||t[3].q!==t[0].trim()+'→'+t[1].trim()) await gwAuto(i); } }
+gwAutoAll();
 
 /* ===================== ③ 역 이름 쓰기 ===================== */
 let sheet=null;
@@ -674,7 +997,7 @@ function makeSheet(){
   if(mode==='few') shuffle(inner.slice(1,-1)).slice(0,Math.min(3,Math.max(1,n-2))).forEach(i=>blanks.add(i));
   if(mode==='all') inner.forEach(i=>blanks.add(i));
   sheet={k,stops,blanks};
-  $('#shTitle').innerHTML=`<span class="chip" style="background:${L.color}">${esc(L.short)}</span> ${esc(baseName(stops[0]))} → ${esc(baseName(stops[n-1]))} ${L.type==='bus'?'정류장':'역'} 이름을 빈칸에 써요`;
+  $('#shTitle').innerHTML=`<span class="chip" style="background:${L.color}">${esc(L.short)}</span> ${esc(baseName(stops[0]))} → ${esc(baseName(stops[n-1]))} ${L.type==='bus'?'정류장':'역'} 이름을 찾아서 순서대로 제시해요`;
   wSel=null;
   $('#shBankBox').innerHTML = $('#shBank').checked? `<div class="muted noprint">보기 — 역 이름을 <b>끌어서</b> 알맞은 빈칸에 놓아요. (눌러서 고른 뒤 빈칸을 눌러도 돼요)</div>
     <div class="muted printOnly">보기</div>
@@ -687,10 +1010,18 @@ function makeSheet(){
   fitAll();
 }
 
+/* ---------- 방송 빠르기 · 끄는 빠르기 ---------- */
+const shOpt = Object.assign({rate:1, drag:1}, store.get('shOpt',{}));
+const xLabel = v => (+v).toFixed(1)+'배'+(+v<0.95?' (느리게)':+v>1.05?' (빠르게)':' (보통)');
+function shOptUI(){ $('#shRate').value=shOpt.rate; $('#shDrag').value=shOpt.drag; $('#oShRate').textContent=xLabel(shOpt.rate); $('#oShDrag').textContent=xLabel(shOpt.drag); }
+[['#shRate','rate'],['#shDrag','drag']].forEach(([s,k])=>{ $(s).oninput=()=>{ shOpt[k]=parseFloat($(s).value); store.set('shOpt',shOpt); shOptUI(); }; });
+$('#shRate').onchange=()=>speak('혜화역', shOpt.rate);
+shOptUI();
+
 /* ---------- 보기 낱말 옮기기 (마우스·터치 끌기 / 눌러서 고르기) ---------- */
 let wSel=null, drag=null;
 const chipById = id => $(`#shBankBox .wchip[data-id="${id}"]`);
-function selectChip(c){ if(wSel) wSel.classList.remove('sel'); wSel = (wSel===c)? null : c; if(wSel){ wSel.classList.add('sel'); speak(sayName(c.dataset.w)); } }
+function selectChip(c){ if(wSel) wSel.classList.remove('sel'); wSel = (wSel===c)? null : c; if(wSel){ wSel.classList.add('sel'); speak(sayName(c.dataset.w), shOpt.rate); } }
 function unplace(inp){ if(inp.dataset.wid){ chipById(inp.dataset.wid)?.classList.remove('used'); delete inp.dataset.wid; } }
 function returnChip(c){ const inp=$(`#shRoute input[data-wid="${c.dataset.id}"]`); if(inp){ inp.value=''; inp.classList.remove('ok','bad'); unplace(inp); fitEl(inp); } c.classList.remove('used'); }
 function placeChip(c, inp){
@@ -710,17 +1041,23 @@ $('#shBankBox').addEventListener('pointerdown',e=>{
   const c=e.target.closest('.wchip'); if(!c) return;
   if(c.classList.contains('used')){ returnChip(c); return; }
   e.preventDefault();
-  drag={c,x:e.clientX,y:e.clientY,moved:false,ghost:null,over:null};
+  const r=c.getBoundingClientRect();
+  drag={c,x:e.clientX,y:e.clientY,gx:r.left+r.width/2,gy:r.top+r.height/2,px:e.clientX,py:e.clientY,moved:false,ghost:null,over:null};
 });
 document.addEventListener('pointermove',e=>{
   if(!drag) return;
   if(!drag.moved){ if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6) return;
     drag.moved=true; drag.ghost=document.createElement('div'); drag.ghost.className='dragGhost'; drag.ghost.textContent=drag.c.dataset.w;
     document.body.appendChild(drag.ghost); drag.c.classList.add('dragging'); }
-  drag.ghost.style.left=e.clientX+'px'; drag.ghost.style.top=e.clientY+'px';
-  const inp=document.elementFromPoint(e.clientX,e.clientY)?.closest('#shRoute .stop')?.querySelector('input') || null;
+  /* 끄는 빠르기: 손(마우스)이 움직인 거리 × 배율만큼 낱말이 움직이고, 놓는 칸은 낱말 자리로 정함 */
+  const k=shOpt.drag||1;
+  drag.gx=Math.max(4,Math.min(innerWidth-4, drag.gx+(e.clientX-drag.px)*k));
+  drag.gy=Math.max(4,Math.min(innerHeight-4, drag.gy+(e.clientY-drag.py)*k));
+  drag.px=e.clientX; drag.py=e.clientY;
+  drag.ghost.style.left=drag.gx+'px'; drag.ghost.style.top=drag.gy+'px';
+  const inp=document.elementFromPoint(drag.gx,drag.gy)?.closest('#shRoute .stop')?.querySelector('input') || null;
   if(drag.over!==inp){ drag.over?.classList.remove('over'); drag.over=inp; inp?.classList.add('over'); }
-  if(e.clientY<60) scrollBy(0,-12); else if(e.clientY>innerHeight-60) scrollBy(0,12);
+  const sc=Math.round(12*k); if(drag.gy<60) scrollBy(0,-sc); else if(drag.gy>innerHeight-60) scrollBy(0,sc);
 });
 function endDrag(drop){
   if(!drag) return; const d=drag; drag=null;
@@ -755,9 +1092,16 @@ $('#shCheck').onclick=()=>{ if(!sheet) return; let ok=0,t=0;
   $$('#shRoute input').forEach(inp=>{ const c=sameName(inp.value,sheet.stops[+inp.dataset.i]); t++; if(c) ok++; inp.classList.toggle('ok',c); inp.classList.toggle('bad',!c); });
   $('#shResult').innerHTML=`<p class="feedback ${ok===t?'ok':'bad'}">${t}개 중 ${ok}개 맞았어요! ${ok===t?'🎉 참 잘했어요':'빨간 칸을 다시 써 보세요'}</p>`;
 };
-$('#shShow').onclick=()=>{ if(!sheet) return; $$('#shRoute input').forEach(inp=>{ if(!sameName(inp.value,sheet.stops[+inp.dataset.i])){ inp.value=sheet.stops[+inp.dataset.i]; inp.classList.remove('ok'); inp.classList.add('bad'); } }); };
+/* 초기화: 넣은 역 이름을 모두 빼고 보기 낱말을 제자리로 */
+$('#shReset').onclick=()=>{ if(!sheet) return;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(wSel) wSel.classList.remove('sel'); wSel=null;
+  $$('#shRoute input').forEach(inp=>{ inp.value=''; inp.classList.remove('ok','bad','over'); delete inp.dataset.wid; });
+  $$('#shBankBox .wchip').forEach(c=>c.classList.remove('used','sel','dragging'));
+  $('#shResult').innerHTML=''; fitAll(); toast('처음부터 다시 해 봐요');
+};
 $('#shListen').onclick=async()=>{ if(!sheet) return; const unit=LINES[sheet.k].type==='bus'?'':'역';
-  for(const s of sheet.stops){ await speak(sayName(s)+unit); await wait(300); } };
+  for(const s of sheet.stops){ await speak(sayName(s)+unit, shOpt.rate); await wait(Math.round(300/shOpt.rate)); } };
 
 /* ===================== ④ 안내방송 듣고 내리기 ===================== */
 let ride=null;
